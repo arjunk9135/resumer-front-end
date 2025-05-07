@@ -274,7 +274,7 @@ export default function ResumeAnalyzerPage() {
   };
   
   // Handle form submission
-  const onSubmit = (data) => {
+  const onSubmit = async(data) => {
     if (uploadedFiles.length === 0) {
       toast({
         title: 'Missing resumes',
@@ -283,9 +283,13 @@ export default function ResumeAnalyzerPage() {
       });
       return;
     }
-    
-    createAnalysisMutation.mutate(data);
+    const res = true;
+    if(res){
+      navigate('/results');
+    }
+    // createAnalysisMutation.mutate(data);
   };
+  
   
   return (
     <PageContainer title="Resume Analyzer">

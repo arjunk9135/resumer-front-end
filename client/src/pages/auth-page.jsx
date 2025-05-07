@@ -71,7 +71,7 @@ export default function AuthPage() {
   }
 
   // Redirect if user is already logged in
-  if (true) {
+  if (false) {
     return <Redirect to="/" />;
   }
 
