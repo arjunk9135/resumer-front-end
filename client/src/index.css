@@ -1,0 +1,103 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'SF Pro Display';
+  src: url('https://fonts.cdnfonts.com/css/sf-pro-display') format('woff2');
+  font-weight: 300 900;
+  font-style: normal;
+}
+
+:root {
+  --background: 210 40% 98%;
+  --foreground: 222 47% 11.2%;
+  --muted: 60 4.8% 95.9%;
+  --muted-foreground: 25 5.3% 44.7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11.2%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11.2%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --primary: 211 79% 40%; /* #2557a7 */
+  --primary-foreground: 210 40% 98%;
+  --secondary: 158 100% 33%; /* #00a86b */
+  --secondary-foreground: 210 40% 98%;
+  --accent: 0 84% 70%; /* #ff6b6b */
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --ring: 215 20.2% 65.1%;
+  --radius: 0.5rem;
+  
+  --chart-1: 211 79% 40%;
+  --chart-2: 158 100% 33%;
+  --chart-3: 0 84% 70%;
+  --chart-4: 214 90% 52%;
+  --chart-5: 158 64% 52%;
+}
+
+.dark {
+  --background: 222 47% 11.2%;
+  --foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --popover: 222 47% 11.2%;
+  --popover-foreground: 210 40% 98%;
+  --card: 222 47% 11.2%;
+  --card-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --primary: 211 79% 40%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 158 100% 33%;
+  --secondary-foreground: 210 40% 98%;
+  --accent: 0 84% 70%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --ring: 217.2 32.6% 17.5%;
+  
+  --chart-1: 211 79% 40%;
+  --chart-2: 158 100% 33%;
+  --chart-3: 0 84% 70%;
+  --chart-4: 214 90% 52%;
+  --chart-5: 158 64% 52%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-[#f8f9fa] text-[#2d3436];
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+}
+
+.sidebar-link.active {
+  @apply bg-primary bg-opacity-10 border-l-2 border-primary;
+}
+
+.sidebar-section {
+  @apply py-3 px-4;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.custom-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Card shadows */
+.card-shadow {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
