@@ -10,27 +10,19 @@ export default defineConfig(async () => {
       : [];
 
   return {
-    // No need to set root since the config file is already 
-    // expected to be at the same level as index.html
-    
+    root: path.resolve(__dirname, "client"),
     plugins: [react(), runtimeErrorOverlay(), ...cartographerPlugin],
-    
     resolve: {
       alias: {
-        "@": path.resolve(__dirname, "src"),
-        "@shared": path.resolve(__dirname, "../shared"),
-        "@assets": path.resolve(__dirname, "../attached_assets"),
+        "@": path.resolve(__dirname, "client", "src"),
+        "@shared": path.resolve(__dirname, "shared"),
+        "@assets": path.resolve(__dirname, "attached_assets"),
       },
     },
-    
-    // Use relative paths for assets
-    base: "./",
-    
     build: {
-      // Let Vite use its default output directory (dist in the same folder as index.html)
+      outDir: path.resolve(__dirname, "dist"),
       emptyOutDir: true,
     },
-    
-    assetsInclude: ['**/*.svg', '**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif', '**/*.json'],
+    base: "./", // for relative asset loading in Vercel
   };
 });
