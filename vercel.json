@@ -2,15 +2,20 @@
     "version": 2,
     "builds": [
       {
-        "src": "package.json",
-        "use": "@vercel/static-build"
+        "src": "client/package.json",
+        "use": "@vercel/static-build",
+        "config": {
+          "distDir": "dist/public"
+        }
       }
     ],
     "routes": [
       {
         "src": "/(.*)",
-        "dest": "/public/index.html"
+        "dest": "/dist/public/index.html"
       }
-    ]
+    ],
+    "installCommand": "npm install", 
+    "buildCommand": "npm run vercel-build"
   }
   
