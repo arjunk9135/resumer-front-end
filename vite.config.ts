@@ -25,14 +25,14 @@ export default defineConfig(async () => {
       },
     },
 
-    // Set base path at the top level (remove from build object)
+    // Set base path at the top level
     base: "./",
 
     // Build options
     build: {
-      // Out directory for the build, set outside of client folder (dist)
-      outDir: path.resolve(__dirname, "dist"),
-
+      // Keep output inside client folder (default is 'dist' inside root)
+      // This is the key change - we're not specifying outDir, letting it use the default
+      
       // Ensure the output directory is cleaned before the build
       emptyOutDir: true,
     },
