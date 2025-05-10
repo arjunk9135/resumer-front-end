@@ -292,8 +292,8 @@ export default function ResumeAnalyzerPage() {
       formData.append('job_description', data?.jobDescription);
       formData.append('resumes_zip_file', uploadedFiles?.[0]);
 
-      // const url='http://127.0.0.1:8000/api/';
-      const url = 'https://rayappan.pythonanywhere.com/api/'
+      const url='http://127.0.0.1:8000/api/';
+      // const url = 'https://rayappan.pythonanywhere.com/api/'
 
       const res = await fetch(`${url}`, {
         method: 'POST',
