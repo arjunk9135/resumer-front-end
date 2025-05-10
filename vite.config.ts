@@ -10,8 +10,13 @@ export default defineConfig(async () => {
       : [];
 
   return {
+    // Root directory is set to the client folder
     root: path.resolve(__dirname, "client"),
+
+    // Plugins to handle React, runtime error overlay, and Replit plugin (if not in production)
     plugins: [react(), runtimeErrorOverlay(), ...cartographerPlugin],
+
+    // Resolve paths for aliases
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "client", "src"),
@@ -19,10 +24,21 @@ export default defineConfig(async () => {
         "@assets": path.resolve(__dirname, "attached_assets"),
       },
     },
+
+    // Build options
     build: {
-      outDir: path.resolve(__dirname, "dist"), // ✅ outside client
+      // Out directory for the build, set outside of client folder (dist)
+      outDir: path.resolve(__dirname, "dist"),
+
+      // Ensure the output directory is cleaned before the build
       emptyOutDir: true,
+
+      // Specify base path for assets (relative to the root of the server)
+      base: "/",
     },
-    base: "", // ✅ absolute URLs
+
+    // Ensure asset links are resolved correctly relative to the root
+    base: "/",
+
   };
 });
