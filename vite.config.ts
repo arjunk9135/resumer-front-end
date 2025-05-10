@@ -10,34 +10,27 @@ export default defineConfig(async () => {
       : [];
 
   return {
-    // Root directory is set to the client folder
-    root: path.resolve(__dirname, "client"),
-
-    // Plugins to handle React, runtime error overlay, and Replit plugin (if not in production)
+    // No need to set root since the config file is already 
+    // expected to be at the same level as index.html
+    
     plugins: [react(), runtimeErrorOverlay(), ...cartographerPlugin],
-
-    // Resolve paths for aliases
+    
     resolve: {
       alias: {
-        "@": path.resolve(__dirname, "client", "src"),
-        "@shared": path.resolve(__dirname, "shared"),
-        "@assets": path.resolve(__dirname, "attached_assets"),
+        "@": path.resolve(__dirname, "src"),
+        "@shared": path.resolve(__dirname, "../shared"),
+        "@assets": path.resolve(__dirname, "../attached_assets"),
       },
     },
-
-    // Set base path at the top level
+    
+    // Use relative paths for assets
     base: "./",
-
-    // Build options
+    
     build: {
-      // Keep output inside client folder (default is 'dist' inside root)
-      // This is the key change - we're not specifying outDir, letting it use the default
-      
-      // Ensure the output directory is cleaned before the build
+      // Let Vite use its default output directory (dist in the same folder as index.html)
       emptyOutDir: true,
     },
-
-    // Add this to ensure all assets are included
+    
     assetsInclude: ['**/*.svg', '**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif', '**/*.json'],
   };
 });
