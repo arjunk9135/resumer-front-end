@@ -292,16 +292,20 @@ export default function ResumeAnalyzerPage() {
       formData.append('job_description', data?.jobDescription);
       formData.append('resumes_zip_file', uploadedFiles?.[0]);
 
-      // const res = await fetch('https://rayappan.pythonanywhere.com/api/', {
-      //   method: 'POST',
-      //   body: formData,
-      //   // Headers are not needed when using FormData - 
-      //   // the browser will automatically set the correct Content-Type with boundary
-      // });
+      const url='http://127.0.0.1:8000/api/';
+      // const url = 'https://rayappan.pythonanywhere.com/api/'
+
+      const res = await fetch(`${url}`, {
+        method: 'POST',
+        body: formData,
+        // Headers are not needed when using FormData - 
+        // the browser will automatically set the correct Content-Type with boundary
+      });
       const _res = dummyData;
-      console.log('Res',_res)
-      setAnalysisResults(_res);
-      if (_res) {
+      const response = await res.json();
+      console.log('Res',response)
+      setAnalysisResults(response);
+      if (response) {
         navigate('/results');
       }
     } catch (e) {

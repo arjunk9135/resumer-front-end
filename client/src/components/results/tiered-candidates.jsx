@@ -1,18 +1,17 @@
-import { useState } from 'react';
-import { 
-  Star, 
-  Trophy, 
-  CheckCircle2, 
-  CircleHelp, 
+import { useState, useEffect } from 'react';
+import {
+  Star,
+  Trophy,
+  CheckCircle2,
+  CircleHelp,
   XCircle,
-  ChevronDown, 
+  ChevronDown,
   ChevronUp,
-  Users
+  Users,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 
 export default function TieredCandidates({ candidates }) {
   const [expandedTiers, setExpandedTiers] = useState({
@@ -22,42 +21,39 @@ export default function TieredCandidates({ candidates }) {
     potential: false,
     notRecommended: false,
   });
-  
-  // Group candidates by tier
-  const candidatesByTier = candidates.reduce((acc, candidate) => {
-    const tier = candidate.tier || 'potential';
+
+  const getTier = (score) => {
+    if (score >= 90) return 'exceptional';
+    if (score >= 80) return 'strong';
+    if (score >= 70) return 'qualified';
+    if (score >= 60) return 'potential';
+    return 'notRecommended';
+  };
+
+  const enrichedCandidates = candidates.map((c, i) => {
+    const matchScore = c.evaluation?.overall?.score * 10 || 0;
+    return {
+      id: i,
+      name: c.name.replace(/_/g, ' '),
+      matchScore,
+      tier: getTier(matchScore),
+      experience: `${c.evaluation?.relevant_experience?.score}/10` || 'N/A',
+      education: `${c.evaluation?.achievements?.score}/10` || 'N/A',
+      location: `${c.evaluation?.professionalism?.score}/10` || 'N/A',
+      skills: [
+        `Clarity: ${c.evaluation?.clarity_and_structure?.score}/10`,
+        `Skills Match: ${c.evaluation?.skills_match?.score}/10`,
+      ],
+    };
+  });
+
+  const candidatesByTier = enrichedCandidates.reduce((acc, candidate) => {
+    const tier = candidate.tier;
     if (!acc[tier]) acc[tier] = [];
     acc[tier].push(candidate);
     return acc;
   }, {});
-  
-  // Get the count and percentage for each tier
-  const tierCounts = {
-    exceptional: (candidatesByTier.exceptional || []).length,
-    strong: (candidatesByTier.strong || []).length,
-    qualified: (candidatesByTier.qualified || []).length,
-    potential: (candidatesByTier.potential || []).length,
-    notRecommended: (candidatesByTier.notRecommended || []).length,
-  };
-  
-  const totalCandidates = candidates.length;
-  
-  const tierPercentages = Object.keys(tierCounts).reduce((acc, tier) => {
-    acc[tier] = totalCandidates > 0 
-      ? Math.round((tierCounts[tier] / totalCandidates) * 100) 
-      : 0;
-    return acc;
-  }, {});
-  
-  // Toggle tier expansion
-  const toggleTier = (tier) => {
-    setExpandedTiers({
-      ...expandedTiers,
-      [tier]: !expandedTiers[tier],
-    });
-  };
-  
-  // Tier configurations
+
   const tierConfig = {
     exceptional: {
       label: 'Exceptional Matches',
@@ -105,20 +101,25 @@ export default function TieredCandidates({ candidates }) {
       textColor: 'text-red-700',
     },
   };
-  
-  // Function to render a tier section
+
+  const toggleTier = (tier) => {
+    setExpandedTiers({
+      ...expandedTiers,
+      [tier]: !expandedTiers[tier],
+    });
+  };
+
   const renderTier = (tier) => {
     const config = tierConfig[tier];
     const candidatesInTier = candidatesByTier[tier] || [];
     const count = candidatesInTier.length;
-    
     if (count === 0) return null;
-    
+
     const Icon = config.icon;
-    
+
     return (
       <div key={tier} className={`rounded-lg overflow-hidden mb-4 ${config.borderColor} border`}>
-        <div 
+        <div
           className={`p-4 ${config.bgColor} flex items-center justify-between cursor-pointer`}
           onClick={() => toggleTier(tier)}
         >
@@ -132,14 +133,13 @@ export default function TieredCandidates({ candidates }) {
           <div className="flex items-center space-x-4">
             <div className="text-right">
               <span className="text-sm font-medium">{count} candidates</span>
-              <div className="text-xs text-gray-500">{tierPercentages[tier]}% of total</div>
             </div>
             <Button variant="ghost" size="icon" className="h-8 w-8">
               {expandedTiers[tier] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
             </Button>
           </div>
         </div>
-        
+
         {expandedTiers[tier] && (
           <div className="p-3 bg-white">
             <div className="grid grid-cols-1 gap-3">
@@ -151,21 +151,14 @@ export default function TieredCandidates({ candidates }) {
                       <Badge className="ml-2">{candidate.matchScore}%</Badge>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
-                      {candidate.experience} • {candidate.education} • {candidate.location}
+                      Experience: {candidate.experience} • Education Score: {candidate.education} • Professionalism: {candidate.location}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1">
-                      {(Array.isArray(candidate.skills) ? candidate.skills : candidate.skills?.split(',') || [])
-                        .slice(0, 3)
-                        .map((skill, i) => (
-                          <Badge key={i} variant="outline" className="mr-1 mb-1 text-xs">
-                            {skill}
-                          </Badge>
-                        ))}
-                      {(Array.isArray(candidate.skills) ? candidate.skills.length : (candidate.skills?.split(',') || []).length) > 3 && (
-                        <Badge variant="outline" className="bg-gray-50 text-xs">
-                          +{(Array.isArray(candidate.skills) ? candidate.skills.length : (candidate.skills?.split(',') || []).length) - 3}
+                      {candidate.skills.map((skill, i) => (
+                        <Badge key={i} variant="outline" className="mr-1 mb-1 text-xs">
+                          {skill}
                         </Badge>
-                      )}
+                      ))}
                     </div>
                   </div>
                   <div className="mt-3 sm:mt-0 flex sm:flex-col items-center sm:items-end">
@@ -175,19 +168,13 @@ export default function TieredCandidates({ candidates }) {
                   </div>
                 </div>
               ))}
-              
-              {candidatesInTier.length > 5 && (
-                <Button variant="outline" className="mt-2">
-                  View All {candidatesInTier.length} Candidates
-                </Button>
-              )}
             </div>
           </div>
         )}
       </div>
     );
   };
-  
+
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -197,7 +184,6 @@ export default function TieredCandidates({ candidates }) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Legend */}
         <div className="flex flex-wrap items-center gap-4 mb-4 pb-4 border-b">
           <span className="text-sm font-medium">Score Tiers:</span>
           <div className="flex items-center text-xs text-yellow-700">
@@ -221,21 +207,7 @@ export default function TieredCandidates({ candidates }) {
             Below 60% Not Recommended
           </div>
         </div>
-        
-        {/* Tier Sections */}
-        <div className="space-y-4">
-          {candidates.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">No candidates found</div>
-          ) : (
-            <>
-              {renderTier('exceptional')}
-              {renderTier('strong')}
-              {renderTier('qualified')}
-              {renderTier('potential')}
-              {renderTier('notRecommended')}
-            </>
-          )}
-        </div>
+        {Object.keys(tierConfig).map((tier) => renderTier(tier))}
       </CardContent>
     </Card>
   );

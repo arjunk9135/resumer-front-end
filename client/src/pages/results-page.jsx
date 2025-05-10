@@ -25,6 +25,8 @@ export default function ResultsPage() {
   const { toast } = useToast();
   const [sortType, setSortType] = useState('match');
   const {analysisResults,setAnalysisResults} = useMyContext();
+
+  console.log('analysisResults', analysisResults);
   
   // Mock fetch analyses from sessionStorage
   const { data: analyses = [] } = useQuery({
@@ -88,8 +90,8 @@ export default function ResultsPage() {
     });
   };
   
-  // If no analysis is selected or found
-  if (!currentAnalysis) {
+  // If no analysis is selected or found  
+  if (analysisResults?.candidates<=0) {
     return (
       <PageContainer title="Analysis Results">
         <div className="flex flex-col items-center justify-center py-12">
@@ -136,9 +138,9 @@ export default function ResultsPage() {
           <CardContent className="p-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between">
               <div>
-                <h2 className="text-xl font-display font-semibold text-text">{currentAnalysis.jobTitle}</h2>
+                <h2 className="text-xl font-display font-semibold text-text">{currentAnalysis?.jobTitle}</h2>
                 <p className="text-gray-500 mt-1">
-                  {currentAnalysis.department || 'No Department'} • Created {new Date(currentAnalysis.createdAt).toLocaleDateString()}
+                  {currentAnalysis?.department || 'No Department'} • Created {new Date(currentAnalysis?.createdAt)?.toLocaleDateString()}
                 </p>
               </div>
               <div className="mt-4 md:mt-0 flex items-center">
@@ -147,7 +149,7 @@ export default function ResultsPage() {
                     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                     <circle cx="12" cy="7" r="4"></circle>
                   </svg>
-                  <span className="text-gray-700 font-medium">{currentAnalysis.candidateCount} Candidates</span>
+                  <span className="text-gray-700 font-medium">{currentAnalysis?.candidateCount} Candidates</span>
                 </div>
                 <Select value={sortType} onValueChange={setSortType}>
                   <SelectTrigger className="w-[200px]">
@@ -178,13 +180,13 @@ export default function ResultsPage() {
         
         {/* Charts Row */}
         <Charts 
-          candidates={analysisResults?.candidates || candidates}
+          candidates={analysisResults?.candidates}
           loading={candidatesLoading}
         />
         
         {/* Tiered Candidates Section */}
-        {!candidatesLoading && candidates.length > 0 && (
-          <TieredCandidates candidates={candidates} />
+        {!candidatesLoading && analysisResults?.candidates?.length > 0 && (
+          <TieredCandidates candidates={analysisResults?.candidates} />
         )}
         
         {/* Candidates Table */}
