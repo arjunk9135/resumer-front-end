@@ -1,4 +1,4 @@
-import { useState,useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -16,6 +16,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { dummyData } from '../lib/dummy';
+import {useMyContext} from '../hooks/use-context'
 
 // Form schema based on the analysis requirements
 const analysisFormSchema = z.object({
@@ -44,21 +46,22 @@ export default function ResumeAnalyzerPage() {
   const [isReanalysis, setIsReanalysis] = useState(false);
   const [originalAnalysis, setOriginalAnalysis] = useState(null);
   const { toast } = useToast();
-  
+  const {analysisResults,setAnalysisResults} = useMyContext();
+
   // Check if this is a reanalysis by extracting the ID from URL params
   useEffect(() => {
     const params = new URLSearchParams(location.split('?')[1]);
     const reanalysisId = params.get('reanalysis');
-    
+
     if (reanalysisId) {
       // Get analyses from sessionStorage
       const analyses = JSON.parse(sessionStorage.getItem('analyses') || '[]');
       const analysis = analyses.find(a => a.id === parseInt(reanalysisId));
-      
+
       if (analysis) {
         setIsReanalysis(true);
         setOriginalAnalysis(analysis);
-        
+
         // Prefill form with original analysis data
         form.reset({
           name: `${analysis.name} (Reanalysis)`,
@@ -80,7 +83,7 @@ export default function ResumeAnalyzerPage() {
       }
     }
   }, [location]);
-  
+
   // Initialize form
   const form = useForm({
     resolver: zodResolver(analysisFormSchema),
@@ -102,16 +105,16 @@ export default function ResumeAnalyzerPage() {
       },
     },
   });
-  
+
   // Create analysis mutation - modified to work without backend
   const createAnalysisMutation = useMutation({
     mutationFn: async (data) => {
       // Simulate API call with 1 second delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Generate a random ID for the analysis
       const analysisId = Math.floor(Math.random() * 10000) + 1;
-      
+
       // Create a mock analysis object
       const analysis = {
         id: analysisId,
@@ -122,12 +125,12 @@ export default function ResumeAnalyzerPage() {
         averageScore: 0,
         createdAt: new Date().toISOString()
       };
-      
+
       // Store in sessionStorage to persist through page navigation
       const analyses = JSON.parse(sessionStorage.getItem('analyses') || '[]');
       analyses.push(analysis);
       sessionStorage.setItem('analyses', JSON.stringify(analyses));
-      
+
       // Generate notifications
       const notification = {
         id: Math.floor(Math.random() * 10000) + 1,
@@ -140,11 +143,11 @@ export default function ResumeAnalyzerPage() {
         relatedId: analysisId,
         relatedType: 'analysis'
       };
-      
+
       const notifications = JSON.parse(sessionStorage.getItem('notifications') || '[]');
       notifications.push(notification);
       sessionStorage.setItem('notifications', JSON.stringify(notifications));
-      
+
       return analysis;
     },
     onSuccess: (data) => {
@@ -152,10 +155,10 @@ export default function ResumeAnalyzerPage() {
         title: 'Analysis created',
         description: 'Your resume analysis has been started',
       });
-      
+
       // Simulate starting the analysis process
       simulateAnalysisProgress(data.id);
-      
+
       // Navigate to the results page directly for testing
       setTimeout(() => {
         navigate('/results');
@@ -169,7 +172,7 @@ export default function ResumeAnalyzerPage() {
       });
     },
   });
-  
+
   // Mock function to simulate the analysis progress with tiered results
   const simulateAnalysisProgress = async (analysisId) => {
     try {
@@ -198,14 +201,14 @@ export default function ResumeAnalyzerPage() {
             return Math.floor(Math.random() * 9) + 50;
           }
         };
-        
+
         // Shuffle the files to randomize who gets what tier
         const shuffledFiles = [...uploadedFiles].sort(() => Math.random() - 0.5);
-        
+
         const mockCandidates = shuffledFiles.map((file, index) => {
           // Calculate the score based on position in the array
           const matchScore = generateTieredScore(index, uploadedFiles.length);
-          
+
           // Determine tier based on score
           let tier;
           if (matchScore >= 90) tier = 'exceptional';
@@ -213,7 +216,7 @@ export default function ResumeAnalyzerPage() {
           else if (matchScore >= 70) tier = 'qualified';
           else if (matchScore >= 60) tier = 'potential';
           else tier = 'notRecommended';
-          
+
           return {
             id: Math.floor(Math.random() * 10000) + index + 1,
             analysisId,
@@ -230,11 +233,11 @@ export default function ResumeAnalyzerPage() {
             createdAt: new Date().toISOString()
           };
         });
-        
+
         // Store candidates in sessionStorage
         const candidates = JSON.parse(sessionStorage.getItem('candidates') || '[]');
         sessionStorage.setItem('candidates', JSON.stringify([...candidates, ...mockCandidates]));
-        
+
         // Update analysis status to completed after 2 seconds
         setTimeout(() => {
           const analyses = JSON.parse(sessionStorage.getItem('analyses') || '[]');
@@ -247,7 +250,7 @@ export default function ResumeAnalyzerPage() {
             return a;
           });
           sessionStorage.setItem('analyses', JSON.stringify(updatedAnalyses));
-          
+
           // Add completion notification
           const notifications = JSON.parse(sessionStorage.getItem('notifications') || '[]');
           const completionNotification = {
@@ -263,7 +266,7 @@ export default function ResumeAnalyzerPage() {
           };
           notifications.push(completionNotification);
           sessionStorage.setItem('notifications', JSON.stringify(notifications));
-          
+
           // Force refresh to show the notification
           queryClient.invalidateQueries();
         }, 2000);
@@ -272,9 +275,9 @@ export default function ResumeAnalyzerPage() {
       console.error('Error simulating analysis progress:', error);
     }
   };
-  
+
   // Handle form submission
-  const onSubmit = async(data) => {
+  const onSubmit = async (data) => {
     if (uploadedFiles.length === 0) {
       toast({
         title: 'Missing resumes',
@@ -283,14 +286,32 @@ export default function ResumeAnalyzerPage() {
       });
       return;
     }
-    const res = true;
-    if(res){
-      navigate('/results');
+    try {
+      console.log('Data', data, uploadedFiles)
+      const formData = new FormData();
+      formData.append('job_description', data?.jobDescription);
+      formData.append('resumes_zip_file', uploadedFiles?.[0]);
+
+      // const res = await fetch('https://rayappan.pythonanywhere.com/api/', {
+      //   method: 'POST',
+      //   body: formData,
+      //   // Headers are not needed when using FormData - 
+      //   // the browser will automatically set the correct Content-Type with boundary
+      // });
+      const _res = dummyData;
+      console.log('Res',_res)
+      setAnalysisResults(_res);
+      if (_res) {
+        navigate('/results');
+      }
+    } catch (e) {
+      console.log(e)
     }
+
     // createAnalysisMutation.mutate(data);
   };
-  
-  
+
+
   return (
     <PageContainer title="Resume Analyzer">
       <Card>
@@ -317,7 +338,7 @@ export default function ResumeAnalyzerPage() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="jobTitle"
@@ -332,7 +353,7 @@ export default function ResumeAnalyzerPage() {
                     )}
                   />
                 </div>
-                
+
                 <FormField
                   control={form.control}
                   name="department"
@@ -380,9 +401,9 @@ export default function ResumeAnalyzerPage() {
                 <ResumeDropzone
                   files={uploadedFiles}
                   setFiles={setUploadedFiles}
-                  onUploadProgress={setUploadProgress} 
+                  onUploadProgress={setUploadProgress}
                 />
-                
+
                 {/* Analysis info for large batch uploads */}
                 {uploadedFiles.length > 25 && (
                   <div className="bg-blue-50 border border-blue-100 rounded-md p-3 text-sm text-blue-700 mt-2">
@@ -411,8 +432,8 @@ export default function ResumeAnalyzerPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Experience Level</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
+                        <Select
+                          onValueChange={field.onChange}
                           defaultValue={field.value}
                         >
                           <FormControl>
@@ -433,15 +454,15 @@ export default function ResumeAnalyzerPage() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="filters.location"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Location</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
+                        <Select
+                          onValueChange={field.onChange}
                           defaultValue={field.value}
                         >
                           <FormControl>
@@ -462,7 +483,7 @@ export default function ResumeAnalyzerPage() {
                       </FormItem>
                     )}
                   />
-                  
+
                   <FormField
                     control={form.control}
                     name="filters.skills"
@@ -477,7 +498,7 @@ export default function ResumeAnalyzerPage() {
                     )}
                   />
                 </div>
-                
+
                 {/* Advanced Filters */}
                 <div>
                   <Button
@@ -488,7 +509,7 @@ export default function ResumeAnalyzerPage() {
                   >
                     {showAdvancedFilters ? '- Hide' : '+ Show'} Advanced Filters
                   </Button>
-                  
+
                   {showAdvancedFilters && (
                     <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-6">
                       <FormField
@@ -497,8 +518,8 @@ export default function ResumeAnalyzerPage() {
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Education Level</FormLabel>
-                            <Select 
-                              onValueChange={field.onChange} 
+                            <Select
+                              onValueChange={field.onChange}
                               defaultValue={field.value}
                             >
                               <FormControl>
@@ -519,15 +540,15 @@ export default function ResumeAnalyzerPage() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="filters.industry"
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Industry</FormLabel>
-                            <Select 
-                              onValueChange={field.onChange} 
+                            <Select
+                              onValueChange={field.onChange}
                               defaultValue={field.value}
                             >
                               <FormControl>
@@ -548,7 +569,7 @@ export default function ResumeAnalyzerPage() {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="filters.languages"
@@ -565,7 +586,7 @@ export default function ResumeAnalyzerPage() {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Priority Settings */}
                 <div className="mt-8 border-t pt-4">
                   <h4 className="text-md font-medium text-text mb-4">Priority Settings</h4>
@@ -580,8 +601,8 @@ export default function ResumeAnalyzerPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Skills Priority</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
+                          <Select
+                            onValueChange={field.onChange}
                             defaultValue={field.value}
                           >
                             <FormControl>
@@ -601,15 +622,15 @@ export default function ResumeAnalyzerPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="filters.priorityExperience"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Experience Priority</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
+                          <Select
+                            onValueChange={field.onChange}
                             defaultValue={field.value}
                           >
                             <FormControl>
@@ -629,15 +650,15 @@ export default function ResumeAnalyzerPage() {
                         </FormItem>
                       )}
                     />
-                    
+
                     <FormField
                       control={form.control}
                       name="filters.priorityEducation"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Education Priority</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
+                          <Select
+                            onValueChange={field.onChange}
                             defaultValue={field.value}
                           >
                             <FormControl>

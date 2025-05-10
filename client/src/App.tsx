@@ -13,6 +13,7 @@ import ResumeAnalyzerPage from "@/pages/resume-analyzer-page";
 import AnalysisQueuePage from "@/pages/analysis-queue-page";
 import ResultsPage from "@/pages/results-page";
 import HistoryPage from "@/pages/history-page";
+import { MyContextProvider } from "./hooks/use-context";
 
 function Router() {
   return (
@@ -33,10 +34,12 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <MyContextProvider>
         <TooltipProvider>
           <Toaster />
           <Router />
         </TooltipProvider>
+        </MyContextProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

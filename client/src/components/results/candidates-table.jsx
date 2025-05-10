@@ -160,9 +160,9 @@ export default function CandidatesTable({ candidates, loading, sortType }) {
                         <div className="text-sm text-text">{candidate.location || 'Unknown'}</div>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getMatchScoreColor(candidate.matchScore)}`}>
-                          <span className="font-bold mr-1">{candidate.matchScore}%</span> 
-                          {getMatchScoreLabel(candidate.matchScore)}
+                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getMatchScoreColor(candidate?.evaluation?.overall?.score*100)}`}>
+                          <span className="font-bold mr-1">{candidate?.evaluation?.overall?.score*10}%</span> 
+                          {getMatchScoreLabel(candidate?.evaluation?.overall?.score*10)}
                         </div>
                       </td>
                       <td className="px-4 py-4">

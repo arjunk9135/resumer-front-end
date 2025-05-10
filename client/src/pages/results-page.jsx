@@ -17,12 +17,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useMyContext } from '../hooks/use-context';
 
 export default function ResultsPage() {
   const { id } = useParams();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [sortType, setSortType] = useState('match');
+  const {analysisResults,setAnalysisResults} = useMyContext();
   
   // Mock fetch analyses from sessionStorage
   const { data: analyses = [] } = useQuery({
@@ -60,6 +62,7 @@ export default function ResultsPage() {
       return filteredCandidates;
     }
   });
+
   
   // Handle export click
   const handleExport = () => {
@@ -175,7 +178,7 @@ export default function ResultsPage() {
         
         {/* Charts Row */}
         <Charts 
-          candidates={candidates}
+          candidates={analysisResults?.candidates || candidates}
           loading={candidatesLoading}
         />
         
@@ -186,7 +189,7 @@ export default function ResultsPage() {
         
         {/* Candidates Table */}
         <CandidatesTable 
-          candidates={candidates}
+          candidates={analysisResults?.candidates || candidates}
           loading={candidatesLoading}
           sortType={sortType}
         />
