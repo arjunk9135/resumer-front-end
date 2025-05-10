@@ -25,6 +25,9 @@ export default defineConfig(async () => {
       },
     },
 
+    // Set base path at the top level (remove from build object)
+    base: "./",
+
     // Build options
     build: {
       // Out directory for the build, set outside of client folder (dist)
@@ -32,13 +35,9 @@ export default defineConfig(async () => {
 
       // Ensure the output directory is cleaned before the build
       emptyOutDir: true,
-
-      // Specify base path for assets (relative to the root of the server)
-      base: "/",
     },
 
-    // Ensure asset links are resolved correctly relative to the root
-    base: "/",
-
+    // Add this to ensure all assets are included
+    assetsInclude: ['**/*.svg', '**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif', '**/*.json'],
   };
 });
