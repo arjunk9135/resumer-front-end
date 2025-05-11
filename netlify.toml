@@ -1,7 +1,6 @@
 [build]
-  command = "npm install && npm run build"
+  command = "chmod +x ./netlify-build.sh && ./netlify-build.sh"
   publish = "dist"
-  environment = { NODE_VERSION = "18" }
 
 [[redirects]]
   from = "/*"
