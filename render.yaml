@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: react-app
+    env: node
+    buildCommand: npm run build
+    startCommand: npm run start
+    staticAssets:
+      - path: dist/client

@@ -49,23 +49,27 @@ export default function Sidebar() {
     return location.startsWith(path);
   };
   
-  const renderNavItems = () => (
-    navItems.map(item => (
+  const renderNavItems = () =>
+  navItems.map(item => {
+    const active = isActive(item.path);
+    return (
       <Link 
         key={item.path} 
         href={item.path}
         onClick={closeMobileMenu}
         className={cn(
-          "flex items-center py-3 px-4 text-gray-700 rounded-md hover:bg-gray-100 transition-colors",
-          "sidebar-link",
-          isActive(item.path) && "active"
+          "flex items-center py-3 px-4 rounded-md transition-colors",
+          active
+            ? "bg-primary text-white"
+            : "text-black hover:bg-primary hover:text-white"
         )}
       >
         {item.icon}
         <span className="ml-3">{item.title}</span>
       </Link>
-    ))
-  );
+    );
+  });
+
   
   // Mobile menu button
   const mobileMenuButton = (
