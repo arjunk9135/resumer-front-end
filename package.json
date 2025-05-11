@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "vercel-build": "vite build",
+    "preinstall": "npm install -g vite", 
+  "postinstall": "vite --version",     
     "preview": "vite preview",
     "start": "vite preview --port 5000",
     "check": "tsc",
