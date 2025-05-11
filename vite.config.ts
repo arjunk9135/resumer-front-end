@@ -28,26 +28,84 @@
 // });
 
 
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import path from "path";
+import { defineConfig, Plugin } from 'vite';
+import react from '@vitejs/plugin-react';
+import { createHtmlPlugin } from 'vite-plugin-html';
+import path from 'path';
+import fs from 'fs';
 
+// 1. Custom plugin to remove Replit scripts and modify viewport
+const cleanHtmlPlugin = (): Plugin => {
+  return {
+    name: 'clean-html',
+    transformIndexHtml(html) {
+      return html
+        .replace(/<script src="https:\/\/replit\.com\/public\/js\/replit-dev-banner\.js"><\/script>/g, '')
+        .replace(/,maximum-scale=1/g, '');
+    },
+    closeBundle() {
+      const htmlPath = path.resolve(__dirname, 'dist/index.html');
+      if (fs.existsSync(htmlPath)) {
+        let html = fs.readFileSync(htmlPath, 'utf8');
+        html = html
+          .replace(/<script src="https:\/\/replit\.com\/public\/js\/replit-dev-banner\.js"><\/script>/g, '')
+          .replace(/,maximum-scale=1/g, '');
+        fs.writeFileSync(htmlPath, html);
+      }
+    }
+  };
+};
+
+// 2. Main Vite configuration
 export default defineConfig({
-  root: path.resolve(__dirname, "client"),
-  plugins: [react()], // Removed Replit-specific plugins
+  root: path.resolve(__dirname, 'client'),
+  plugins: [
+    react(),
+    cleanHtmlPlugin(), // Our custom cleaning plugin
+    createHtmlPlugin({
+      minify: true,
+      inject: {
+        data: {
+          title: 'Resumer App',
+          description: 'Professional Resume Builder'
+        }
+      },
+      template: 'index.html' // Explicit template path
+    })
+  ],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "client/src"),
-      "@shared": path.resolve(__dirname, "shared"),
-      "@assets": path.resolve(__dirname, "attached_assets")
+      '@': path.resolve(__dirname, 'client/src'),
+      '@shared': path.resolve(__dirname, 'shared'),
+      '@assets': path.resolve(__dirname, 'attached_assets')
     }
   },
   build: {
-    outDir: path.resolve(__dirname, "dist/client"), // Standard output dir
+    outDir: path.resolve(__dirname, 'dist'),
     emptyOutDir: true,
-    sourcemap: true
+    assetsDir: 'assets',
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        assetFileNames: 'assets/[name]-[hash][extname]',
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
+        }
+      }
+    }
   },
+  base: '/',
   server: {
-    port: parseInt(process.env.PORT || "3000")
+    port: 3000,
+    strictPort: true,
+    open: true
+  },
+  preview: {
+    port: 3000,
+    strictPort: true
   }
 });
