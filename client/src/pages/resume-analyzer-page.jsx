@@ -18,6 +18,7 @@ import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { dummyData } from '../lib/dummy';
 import {useMyContext} from '../hooks/use-context'
+import LoaderOverlay from '../components/ui/loader-overlay';
 
 // Form schema based on the analysis requirements
 const analysisFormSchema = z.object({
@@ -47,6 +48,7 @@ export default function ResumeAnalyzerPage() {
   const [originalAnalysis, setOriginalAnalysis] = useState(null);
   const { toast } = useToast();
   const {analysisResults,setAnalysisResults} = useMyContext();
+  const [isLoading, setIsLoading] = useState(false);
 
   // Check if this is a reanalysis by extracting the ID from URL params
   useEffect(() => {
@@ -286,18 +288,21 @@ export default function ResumeAnalyzerPage() {
       });
       return;
     }
+    setIsLoading(true); // Show loader
     try {
       console.log('Data', data, uploadedFiles)
       const formData = new FormData();
       formData.append('job_description', data?.jobDescription);
       formData.append('resumes_zip_file', uploadedFiles?.[0]);
 
-      const url='http://127.0.0.1:8000/api/';
-      // const url = 'https://rayappan.pythonanywhere.com/api/'
+      // const url='http://127.0.0.1:8000/api/';
+      const url = 'https://rayappan.pythonanywhere.com/api/'
 
       const res = await fetch(`${url}`, {
         method: 'POST',
         body: formData,
+        mode: 'cors', // Explicitly enable CORS
+  credentials: 'omit' // Change to 'include' if you need cookies
         // Headers are not needed when using FormData - 
         // the browser will automatically set the correct Content-Type with boundary
       });
@@ -306,10 +311,12 @@ export default function ResumeAnalyzerPage() {
       console.log('Res',response)
       setAnalysisResults(response);
       if (response) {
+        setIsLoading(false);
         navigate('/results');
       }
     } catch (e) {
       console.log(e)
+      setIsLoading(false);
     }
 
     // createAnalysisMutation.mutate(data);
@@ -318,6 +325,7 @@ export default function ResumeAnalyzerPage() {
 
   return (
     <PageContainer title="Resume Analyzer">
+       <LoaderOverlay isLoading={isLoading} />
       <Card>
         <CardHeader className="px-6 py-5 border-b border-gray-100">
           <CardTitle className="font-display font-semibold text-lg text-text">New Analysis</CardTitle>

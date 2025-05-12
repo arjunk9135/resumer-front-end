@@ -1,0 +1,19 @@
+[build]
+  command = "npm install --force && npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_FLAGS = "--legacy-peer-deps --force"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Content-Security-Policy = "default-src 'self'; connect-src 'self' https://rayappan.pythonanywhere.com"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -19,7 +19,7 @@ export default function EvaluationCharts({ candidates, loading }) {
   // Prepare average scores across all evaluation categories
   const getCategoryAverages = () => {
     if (!candidates?.length) return [];
-    
+
     const categories = [
       'clarity_and_structure',
       'relevant_experience',
@@ -27,12 +27,12 @@ export default function EvaluationCharts({ candidates, loading }) {
       'skills_match',
       'professionalism'
     ];
-    
+
     return categories.map(category => {
-      const total = candidates.reduce((sum, candidate) => 
+      const total = candidates.reduce((sum, candidate) =>
         sum + candidate.evaluation[category].score, 0);
       const average = total / candidates.length;
-      
+
       return {
         name: category.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join(' '),
         value: parseFloat(average.toFixed(1)),
@@ -44,27 +44,27 @@ export default function EvaluationCharts({ candidates, loading }) {
   // Prepare overall score distribution
   const getScoreDistribution = () => {
     if (!candidates?.length) return [];
-    
+
     const scoreRanges = [
       { name: 'Poor (0-5)', min: 0, max: 5, count: 0 },
       { name: 'Average (6-7)', min: 6, max: 7, count: 0 },
       { name: 'Good (8-9)', min: 8, max: 9, count: 0 },
       { name: 'Excellent (10)', min: 10, max: 10, count: 0 }
     ];
-    
+
     candidates.forEach(candidate => {
       const score = candidate.evaluation.overall.score;
       const range = scoreRanges.find(r => score >= r.min && score <= r.max);
       if (range) range.count++;
     });
-    
+
     return scoreRanges;
   };
 
   // Prepare top performing candidates
   const getTopCandidates = () => {
     if (!candidates?.length) return [];
-    
+
     return [...candidates]
       .sort((a, b) => b.evaluation.overall.score - a.evaluation.overall.score)
       .slice(0, 3)
@@ -138,7 +138,14 @@ export default function EvaluationCharts({ candidates, loading }) {
             </div>
           ) : !categoryAverages.length ? (
             <div className="h-full flex items-center justify-center">
-              <p className="text-gray-500 text-sm">No data</p>
+              <div className="flex flex-col items-center text-gray-500 text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                </svg>
+
+                <span>No data</span>
+              </div>
+
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
@@ -157,9 +164,9 @@ export default function EvaluationCharts({ candidates, loading }) {
                   {categoryAverages.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
-                  <LabelList 
-                    dataKey="name" 
-                    position="outside" 
+                  <LabelList
+                    dataKey="name"
+                    position="outside"
                     offset={15}
                     fontSize={10}
                     fill="#333"
@@ -168,9 +175,9 @@ export default function EvaluationCharts({ candidates, loading }) {
                   />
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
-                <Legend 
-                  layout="horizontal" 
-                  verticalAlign="bottom" 
+                <Legend
+                  layout="horizontal"
+                  verticalAlign="bottom"
                   height={36}
                   wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }}
                 />
@@ -192,7 +199,13 @@ export default function EvaluationCharts({ candidates, loading }) {
             </div>
           ) : !scoreDistribution.length ? (
             <div className="h-full flex items-center justify-center">
-              <p className="text-gray-500 text-sm">No data</p>
+              <div className="flex flex-col items-center text-gray-500 text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                </svg>
+
+                <span>No data</span>
+              </div>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
@@ -223,7 +236,13 @@ export default function EvaluationCharts({ candidates, loading }) {
             </div>
           ) : !topCandidates.length ? (
             <div className="h-full flex items-center justify-center">
-              <p className="text-gray-500 text-sm">No data</p>
+             <div className="flex flex-col items-center text-gray-500 text-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
+                </svg>
+
+                <span>No data</span>
+              </div>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
@@ -233,13 +252,13 @@ export default function EvaluationCharts({ candidates, loading }) {
                 margin={{ left: 30, right: 20 }}
               >
                 <XAxis type="number" domain={[0, 10]} tick={{ fontSize: 10 }} />
-                <YAxis 
-                  dataKey="name" 
-                  type="category" 
+                <YAxis
+                  dataKey="name"
+                  type="category"
                   width={80}
                   tick={{ fontSize: 10 }}
                 />
-                <Tooltip 
+                <Tooltip
                   content={<CustomTooltip />}
                   formatter={(value) => [`Score: ${value}/10`, '']}
                 />
