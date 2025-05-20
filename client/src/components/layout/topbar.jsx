@@ -4,13 +4,13 @@ import { Bell } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -19,17 +19,17 @@ import NotificationItem from '@/components/notifications/notification-item';
 export default function Topbar() {
   const { user } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
-  
+
   const { data: notifications = [], refetch: refetchNotifications } = useQuery({
     queryKey: ['/api/notifications'],
-    staleTime: 60000 // 1 minute
+    staleTime: 60000
   });
-  
+
   const unreadCount = notifications.filter(n => !n.isRead).length;
-  
+
   const handleNotificationClick = async () => {
     setShowNotifications(!showNotifications);
-    
+
     if (unreadCount > 0) {
       try {
         await apiRequest('POST', '/api/notifications/read-all');
@@ -39,60 +39,51 @@ export default function Topbar() {
       }
     }
   };
-  
-  // Get user initials
+
   const getInitials = (name) => {
     if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
-  
+
   return (
-    <header className="bg-white shadow-card">
-      <div className="flex items-center justify-between px-4 py-3">
-        <div>
-          {/* Empty div to maintain spacing */}
+    <header className="bg-gradient-to-r from-slate-900 to-gray-800 text-white shadow-lg border-b border-gray-700 backdrop-blur-md">
+      <div className="flex items-center justify-between px-6 py-3">
+        <div className="text-xl font-bold tracking-tight text-white select-none">
+          {/* Resume Analyzer */}
         </div>
-        
-        <div className="flex items-center">
+
+        <div className="flex items-center space-x-4">
           {/* Remaining Credits */}
-{/* Remaining Credits */}
-<div className="flex items-center mr-4 px-3 py-1.5 bg-green-50 text-green-700 text-sm font-medium rounded-full shadow-sm">
-  <div className="flex items-center justify-center mr-2">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-</svg>
-
-  </div>
-  <span className="text-sm font-semibold">
-    Credits: <span className="font-bold">35</span>
-  </span>
-</div>
-
-
+          <div className="flex items-center px-3 py-1.5 bg-green-500/10 text-green-400 text-sm font-medium rounded-full shadow-inner backdrop-blur-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 mr-1 stroke-current" fill="none" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+            </svg>
+            <span>Credits: <span className="font-bold text-white">35</span></span>
+          </div>
 
           {/* Notifications */}
-          <div className="relative mr-4">
+          <div className="relative">
             <Button
               variant="ghost"
               size="icon"
-              className="relative text-gray-500 hover:text-gray-700 focus:outline-none"
+              className="relative text-white hover:text-green-400 transition-colors duration-150"
               onClick={handleNotificationClick}
             >
-              <Bell className="h-7 w-7" />
+              <Bell className="h-6 w-6" />
               {unreadCount > 0 && (
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center w-4 h-4 text-xs font-bold text-white bg-accent rounded-full">
+                <span className="absolute top-0 right-0 w-4 h-4 bg-red-500 text-xs text-white font-bold rounded-full flex items-center justify-center shadow-md">
                   {unreadCount > 9 ? '9+' : unreadCount}
                 </span>
               )}
             </Button>
-            
+
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg z-10">
-                <div className="p-3 border-b border-gray-100 flex justify-between items-center">
+              <div className="absolute right-0 mt-2 w-80 bg-white text-black rounded-md shadow-2xl z-50 overflow-hidden">
+                <div className="p-3 border-b border-gray-100 flex justify-between items-center bg-gray-100">
                   <h3 className="text-sm font-semibold">Notifications</h3>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     className="text-xs text-primary h-auto py-1"
                     onClick={() => apiRequest('POST', '/api/notifications/read-all').then(() => refetchNotifications())}
                   >
@@ -106,23 +97,23 @@ export default function Topbar() {
                     </div>
                   ) : (
                     notifications.map(notification => (
-                      <NotificationItem 
-                        key={notification.id} 
-                        notification={notification} 
-                      />
+                      <NotificationItem key={notification.id} notification={notification} />
                     ))
                   )}
                 </div>
               </div>
             )}
           </div>
-          
+
           {/* User profile */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative rounded-full h-8 w-8 p-0">
+              <Button variant="ghost" className="rounded-full h-9 w-9 p-0 ring-2 ring-white/20 hover:ring-green-400 transition">
                 <Avatar>
-                  <AvatarImage src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="User" />
+                  <AvatarImage
+                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=774&q=80"
+                    alt="User"
+                  />
                   <AvatarFallback>{getInitials(user?.fullName)}</AvatarFallback>
                 </Avatar>
               </Button>

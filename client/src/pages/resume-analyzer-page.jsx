@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { dummyData } from '../lib/dummy';
-import {useMyContext} from '../hooks/use-context'
+import { useMyContext } from '../hooks/use-context'
 import LoaderOverlay from '../components/ui/loader-overlay';
 
 // Form schema based on the analysis requirements
@@ -39,6 +39,28 @@ const analysisFormSchema = z.object({
   }).optional(),
 });
 
+const StunningInput = ({ label, placeholder, name, control }) => (
+  <FormField
+    control={control}
+    name={name}
+    render={({ field }) => (
+      <FormItem className="bg-white/70 rounded-3xl border p-5 shadow-inner">
+        <FormLabel className="text-gray-700 font-medium">{label}</FormLabel>
+        <FormControl>
+          <Input
+            placeholder={placeholder}
+            {...field}
+            className="mt-2 rounded-full px-4 py-2 bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+);
+
+
+
 export default function ResumeAnalyzerPage() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -47,7 +69,7 @@ export default function ResumeAnalyzerPage() {
   const [isReanalysis, setIsReanalysis] = useState(false);
   const [originalAnalysis, setOriginalAnalysis] = useState(null);
   const { toast } = useToast();
-  const {analysisResults,setAnalysisResults} = useMyContext();
+  const { analysisResults, setAnalysisResults } = useMyContext();
   const [isLoading, setIsLoading] = useState(false);
 
   // Check if this is a reanalysis by extracting the ID from URL params
@@ -280,6 +302,7 @@ export default function ResumeAnalyzerPage() {
 
   // Handle form submission
   const onSubmit = async (data) => {
+    console.log('here')
     if (uploadedFiles.length === 0) {
       toast({
         title: 'Missing resumes',
@@ -297,18 +320,19 @@ export default function ResumeAnalyzerPage() {
 
       // const url='http://127.0.0.1:8000/api/';
       const url = 'https://rayappan.pythonanywhere.com/api/'
+      // const url ='http://localhost:3001/api/'
 
       const res = await fetch(`${url}`, {
         method: 'POST',
         body: formData,
         mode: 'cors', // Explicitly enable CORS
-  credentials: 'omit' // Change to 'include' if you need cookies
+        credentials: 'omit' // Change to 'include' if you need cookies
         // Headers are not needed when using FormData - 
         // the browser will automatically set the correct Content-Type with boundary
       });
       const _res = dummyData;
       const response = await res.json();
-      console.log('Res',response)
+      console.log('Res', response)
       setAnalysisResults(response);
       if (response) {
         setIsLoading(false);
@@ -322,398 +346,140 @@ export default function ResumeAnalyzerPage() {
     // createAnalysisMutation.mutate(data);
   };
 
+  const handleUploadToDB = () => {
+  // Your logic to send uploadedFiles to the DB
+  console.log("Uploading files to DB...", uploadedFiles);
+  // Call your API or function here
+};
+
 
   return (
-    <PageContainer title="Resume Analyzer">
-       <LoaderOverlay isLoading={isLoading} />
-      <Card>
-        <CardHeader className="px-6 py-5 border-b border-gray-100">
-          <CardTitle className="font-display font-semibold text-lg text-text">New Analysis</CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              {/* Step 1: Analysis Info */}
-              <div className="space-y-4">
-                <h3 className="font-display font-medium text-md text-text">1. Analysis Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Analysis Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Senior Developer Hiring Q2 2023" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+   <PageContainer>
+  {isLoading && <LoaderOverlay />}
 
-                  <FormField
-                    control={form.control}
-                    name="jobTitle"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Job Title</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. Senior Frontend Developer" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+<div className="w-full py-0">
+    <div className="mx-auto max-w-6xl bg-white/80 backdrop-blur-lg shadow-2xl rounded-[32px] border border-gray-200 p-10">
+      <h1 className="text-4xl font-extrabold text-gray-800 mb-3 tracking-tight">Resume Analyzer</h1>
+      <p className="text-gray-500 text-lg mb-8">Upload resumes and match them with job descriptions in style.</p>
 
-                <FormField
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-10"
+        >
+          <div className="grid md:grid-cols-2 gap-8">
+            <StunningInput label="Analysis Name" placeholder="e.g. React Developer" name="name" control={form.control} />
+            <StunningInput label="Job Title" placeholder="e.g. Frontend Developer" name="jobTitle" control={form.control} />
+          </div>
+
+          <StunningInput label="Department (optional)" placeholder="e.g. Engineering" name="department" control={form.control} />
+
+          <FormField
+            control={form.control}
+            name="jobDescription"
+            render={({ field }) => (
+              <FormItem className="bg-white/60 rounded-3xl border p-6 shadow-inner">
+                <FormLabel className="text-lg text-gray-700">Job Description</FormLabel>
+                <FormControl>
+                  <JobDescriptionInput field={field} onChange={field?.onChange} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="bg-blue-50/70 border border-dashed border-blue-400 rounded-3xl p-6">
+            <ResumeDropzone
+              uploadedFiles={uploadedFiles}
+              setUploadedFiles={setUploadedFiles}
+              setUploadProgress={setUploadProgress}
+              setFiles={setUploadedFiles}
+              
+            />
+          </div>
+
+          {uploadedFiles?.length > 0 && (
+  <div className="mt-4 max-h-60 overflow-y-auto rounded-xl border p-4 bg-white shadow">
+    <h3 className="text-lg font-semibold mb-2 text-gray-700">Uploaded Resumes</h3>
+    <ul className="space-y-2">
+      {uploadedFiles?.map((file, idx) => (
+        <li key={idx} className="text-sm text-gray-800 truncate border-b pb-1">
+          📄 {file?.name}
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
+
+          <div className="text-right">
+            <button
+              type="button"
+              className="text-sm font-medium text-blue-700 hover:underline transition-all"
+              onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            >
+              {showAdvancedFilters ? 'Hide' : 'Show'} Advanced Filters
+            </button>
+          </div>
+
+          {showAdvancedFilters && (
+            <div className="grid md:grid-cols-3 gap-6 animate-fade-in">
+              {['experience', 'location', 'skills', 'education', 'industry', 'languages'].map((key) => (
+                <StunningInput
+                  key={key}
+                  label={capitalize(key)}
+                  placeholder={`Filter by ${key}`}
+                  name={`filters.${key}`}
                   control={form.control}
-                  name="department"
+                />
+              ))}
+
+              {['prioritySkills', 'priorityExperience', 'priorityEducation'].map((key) => (
+                <FormField
+                  key={key}
+                  control={form.control}
+                  name={`filters.${key}`}
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Department (Optional)</FormLabel>
+                    <FormItem className="bg-white/60 rounded-2xl border p-4 shadow-sm">
+                      <FormLabel className="text-gray-700 font-medium">
+                        {key.replace('priority', 'Priority ')}
+                      </FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Engineering, Marketing, HR" {...field} />
+                        <Select 
+                        // onValueChange={field.onChange} 
+                        value={field?.value}>
+                          <SelectTrigger className="rounded-xl">
+                            <SelectValue placeholder="Select Priority" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="high">High</SelectItem>
+                            <SelectItem value="regular">Regular</SelectItem>
+                            <SelectItem value="low">Low</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </FormControl>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
+              ))}
+            </div>
+          )}
 
-              {/* Step 2: Job Description */}
-              <div className="space-y-4">
-                <h3 className="font-display font-medium text-md text-text">2. Job Description</h3>
-                <FormField
-                  control={form.control}
-                  name="jobDescription"
-                  render={({ field }) => (
-                    <FormItem>
-                      <JobDescriptionInput
-                        value={field.value}
-                        onChange={field.onChange}
-                        error={form.formState.errors.jobDescription}
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 text-lg rounded-full shadow-lg transition-all"
+            >
+              🚀 Start Analysis
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
+  </div>
+</PageContainer>
 
-              {/* Step 3: Upload Resumes */}
-              <div className="space-y-4">
-                <h3 className="font-display font-medium text-md text-text">
-                  3. Upload Resumes
-                  {isReanalysis && originalAnalysis && (
-                    <span className="ml-2 text-sm font-normal text-gray-500">
-                      (Original analysis had {originalAnalysis.candidateCount} resumes)
-                    </span>
-                  )}
-                </h3>
-                <ResumeDropzone
-                  files={uploadedFiles}
-                  setFiles={setUploadedFiles}
-                  onUploadProgress={setUploadProgress}
-                />
 
-                {/* Analysis info for large batch uploads */}
-                {uploadedFiles.length > 25 && (
-                  <div className="bg-blue-50 border border-blue-100 rounded-md p-3 text-sm text-blue-700 mt-2">
-                    <div className="flex items-start">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 mt-0.5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                      </svg>
-                      <div>
-                        <p className="font-medium mb-1">Large batch processing</p>
-                        <p>You've uploaded {uploadedFiles.length} resumes. Large batches will be processed in smaller groups with progress tracking.</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
 
-              {/* Step 4: Filtering Criteria */}
-              <div className="space-y-4">
-                <h3 className="font-display font-medium text-md text-text">4. Filter Criteria (Optional)</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="filters.experience"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Experience Level</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Any Experience" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="any">Any Experience</SelectItem>
-                            <SelectItem value="0-1">0-1 years</SelectItem>
-                            <SelectItem value="1-3">1-3 years</SelectItem>
-                            <SelectItem value="3-5">3-5 years</SelectItem>
-                            <SelectItem value="5-7">5-7 years</SelectItem>
-                            <SelectItem value="7+">7+ years</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
 
-                  <FormField
-                    control={form.control}
-                    name="filters.location"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Location</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Any Location" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="any">Any Location</SelectItem>
-                            <SelectItem value="remote">Remote</SelectItem>
-                            <SelectItem value="usa">United States</SelectItem>
-                            <SelectItem value="europe">Europe</SelectItem>
-                            <SelectItem value="asia">Asia</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="filters.skills"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Key Skills</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g. React, JavaScript, Node.js" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Advanced Filters */}
-                <div>
-                  <Button
-                    type="button"
-                    variant="link"
-                    className="text-primary text-sm p-0 h-auto"
-                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                  >
-                    {showAdvancedFilters ? '- Hide' : '+ Show'} Advanced Filters
-                  </Button>
-
-                  {showAdvancedFilters && (
-                    <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="filters.education"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Education Level</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Any Education" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="any">Any Education</SelectItem>
-                                <SelectItem value="high-school">High School</SelectItem>
-                                <SelectItem value="associate">Associate Degree</SelectItem>
-                                <SelectItem value="bachelor">Bachelor's Degree</SelectItem>
-                                <SelectItem value="master">Master's Degree</SelectItem>
-                                <SelectItem value="phd">PhD</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="filters.industry"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Industry</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Any Industry" />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="any">Any Industry</SelectItem>
-                                <SelectItem value="tech">Technology</SelectItem>
-                                <SelectItem value="finance">Finance</SelectItem>
-                                <SelectItem value="healthcare">Healthcare</SelectItem>
-                                <SelectItem value="education">Education</SelectItem>
-                                <SelectItem value="retail">Retail</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="filters.languages"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Languages</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g. English, Spanish, French" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Priority Settings */}
-                <div className="mt-8 border-t pt-4">
-                  <h4 className="text-md font-medium text-text mb-4">Priority Settings</h4>
-                  <p className="text-sm text-gray-500 mb-4">
-                    Set priority weights for different criteria to better rank candidates.
-                    Higher priority items will have more impact on the candidate scoring.
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="filters.prioritySkills"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Skills Priority</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Regular Priority" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="regular">Regular Priority</SelectItem>
-                              <SelectItem value="low">Low Priority</SelectItem>
-                              <SelectItem value="medium">Medium Priority</SelectItem>
-                              <SelectItem value="high">High Priority</SelectItem>
-                              <SelectItem value="critical">Critical Priority</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="filters.priorityExperience"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Experience Priority</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Regular Priority" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="regular">Regular Priority</SelectItem>
-                              <SelectItem value="low">Low Priority</SelectItem>
-                              <SelectItem value="medium">Medium Priority</SelectItem>
-                              <SelectItem value="high">High Priority</SelectItem>
-                              <SelectItem value="critical">Critical Priority</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="filters.priorityEducation"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Education Priority</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Regular Priority" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="regular">Regular Priority</SelectItem>
-                              <SelectItem value="low">Low Priority</SelectItem>
-                              <SelectItem value="medium">Medium Priority</SelectItem>
-                              <SelectItem value="high">High Priority</SelectItem>
-                              <SelectItem value="critical">Critical Priority</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-5 border-t border-gray-200">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => form.reset()}
-                  className="mr-4"
-                >
-                  Reset
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={createAnalysisMutation.isPending}
-                >
-                  {createAnalysisMutation.isPending ? 'Starting Analysis...' : 'Start Analysis'}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </PageContainer>
   );
 }
