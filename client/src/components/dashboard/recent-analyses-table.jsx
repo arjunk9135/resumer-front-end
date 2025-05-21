@@ -2,14 +2,28 @@ import { Link } from 'wouter';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
+import { PlusIcon } from 'lucide-react';
 
 export default function RecentAnalysesTable({ analyses }) {
   if (!analyses || analyses.length === 0) {
     return (
       <div className="p-6 text-center">
-        <p className="text-gray-500 mb-3">No analyses found</p>
-        <Link href="/resume-analyzer">
-          <Button>Start your first analysis</Button>
+        <p className="mb-6 text-base font-medium select-none">No analyses in progress</p>
+        <Link href="/resume-analyzer" passHref>
+          <a>
+            <button
+              style={{
+                backgroundColor:'#d7e0f66e',
+                boxShadow:
+                  "0 0 #0000, 0 0 #0000, 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+              }}
+              className="inline-flex items-center px-5 py-3 bg-white/30 hover:shadow-lg transition-shadow duration-300 hover:bg-white/50 text-gray-800 font-semibold rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-400"
+            >
+              <PlusIcon className="h-5 w-5 mr-2" />
+              Start New Analysis
+            </button>
+
+          </a>
         </Link>
       </div>
     );
@@ -66,7 +80,7 @@ export default function RecentAnalysesTable({ analyses }) {
 
 // Helper functions
 function getStatusVariant(status) {
-  switch(status) {
+  switch (status) {
     case 'completed': return 'success';
     case 'processing': return 'default';
     case 'queued': return 'secondary';
@@ -76,7 +90,7 @@ function getStatusVariant(status) {
 }
 
 function getStatusLabel(status) {
-  switch(status) {
+  switch (status) {
     case 'completed': return 'Completed';
     case 'processing': return 'Processing';
     case 'queued': return 'Queued';

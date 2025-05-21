@@ -102,7 +102,7 @@ export default function ResumeDropzone({ files, setFiles, onUploadProgress }) {
         </div>
       </div>
       
-      {files.length > 0 && (
+      {files?.length > 0 && (
         <div className="mt-4 space-y-2 max-h-60 overflow-y-auto">
           {files.map((file, index) => (
             <div key={index} className="flex items-center justify-between text-sm p-2 bg-gray-50 rounded">
@@ -136,7 +136,7 @@ export default function ResumeDropzone({ files, setFiles, onUploadProgress }) {
         </div>
       )}
       
-      {files.length > 0 && (
+      {files?.length > 0 && (
         <div className="flex items-center mt-2">
           <span className="text-sm text-gray-600">
             {files.length} file{files.length !== 1 ? 's' : ''} selected
