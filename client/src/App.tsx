@@ -18,13 +18,13 @@ import { MyContextProvider } from "./hooks/use-context";
 function Router() {
   return (
     <Switch>
-      <ProtectedRoute path="/" component={DashboardPage} />
+      <ProtectedRoute path="/dashboard" component={DashboardPage} />
       <ProtectedRoute path="/resume-analyzer" component={ResumeAnalyzerPage} />
       <ProtectedRoute path="/analysis-queue" component={AnalysisQueuePage} />
       <ProtectedRoute path="/results/:id" component={ResultsPage} />
       <ProtectedRoute path="/results" component={ResultsPage} />
       <ProtectedRoute path="/history" component={HistoryPage} />
-      <Route path="/auth" component={AuthPage} />
+      <Route path="/" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
   );

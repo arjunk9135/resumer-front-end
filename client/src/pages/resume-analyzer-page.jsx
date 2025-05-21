@@ -19,6 +19,8 @@ import { useToast } from '@/hooks/use-toast';
 import { dummyData } from '../lib/dummy';
 import { useMyContext } from '../hooks/use-context'
 import LoaderOverlay from '../components/ui/loader-overlay';
+import { dummyCandidates } from '../components/ui/dummyData';
+import Loader from '../components/ui/Loader/Loader';
 
 // Form schema based on the analysis requirements
 const analysisFormSchema = z.object({
@@ -311,9 +313,16 @@ export default function ResumeAnalyzerPage() {
       });
       return;
     }
-    setIsLoading(true); // Show loader
+    setIsLoading(true); 
     try {
       console.log('Data', data, uploadedFiles)
+      localStorage.setItem('data', JSON.stringify(data));
+      //for testing 
+      // setAnalysisResults({
+      //   candidates : dummyCandidates
+      // })
+      //  navigate('/results');
+
       const formData = new FormData();
       formData.append('job_description', data?.jobDescription);
       formData.append('resumes_zip_file', uploadedFiles?.[0]);
@@ -340,6 +349,10 @@ export default function ResumeAnalyzerPage() {
       }
     } catch (e) {
       console.log(e)
+      setAnalysisResults({
+        candidates : dummyCandidates
+      })
+       navigate('/results');
       setIsLoading(false);
     }
 
@@ -355,7 +368,7 @@ export default function ResumeAnalyzerPage() {
 
   return (
    <PageContainer>
-  {isLoading && <LoaderOverlay />}
+  {isLoading && <Loader />}
 
 <div className="w-full py-0">
     <div className="mx-auto max-w-6xl bg-white/80 backdrop-blur-lg shadow-2xl rounded-[32px] border border-gray-200 p-10">
@@ -469,7 +482,7 @@ export default function ResumeAnalyzerPage() {
               type="submit"
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 text-lg rounded-full shadow-lg transition-all"
             >
-              🚀 Start Analysis
+               Start Analysis
             </Button>
           </div>
         </form>

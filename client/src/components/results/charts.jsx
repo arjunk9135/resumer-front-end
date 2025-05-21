@@ -53,7 +53,7 @@ export default function EvaluationCharts({ candidates, loading }) {
     ];
 
     candidates.forEach(candidate => {
-      const score = candidate.evaluation.overall.score;
+      const score = candidate?.evaluation?.overall?.score;
       const range = scoreRanges.find(r => score >= r.min && score <= r.max);
       if (range) range.count++;
     });

@@ -28,26 +28,38 @@ export default function CandidatesTable({ candidates, loading, sortType }) {
   });
   
   // Sort candidates based on sort type
-  const sortedCandidates = [...filteredCandidates].sort((a, b) => {
-    switch (sortType) {
-      case 'match':
-        return b.matchScore - a.matchScore;
-      case 'experience':
-        // Extract numbers from experience strings
-        const expA = parseFloat(a.experience?.match(/(\d+\.?\d*)/)?.[1] || '0');
-        const expB = parseFloat(b.experience?.match(/(\d+\.?\d*)/)?.[1] || '0');
-        return expB - expA;
-      case 'education':
-        const eduRank = { PhD: 3, Master: 2, Bachelor: 1 };
-        const rankA = eduRank[a.education] || 0;
-        const rankB = eduRank[b.education] || 0;
-        return rankB - rankA;
-      case 'name':
-        return a.name?.localeCompare(b.name || '');
-      default:
-        return b.matchScore - a.matchScore;
-    }
-  });
+ const sortedCandidates = [...filteredCandidates].sort((a, b) => {
+  switch (sortType) {
+    case 'match':
+      return (b.matchScore || 0) - (a.matchScore || 0);
+
+    case 'experience':
+      const expA = parseFloat(a.experience?.match(/[\d.]+/)?.[0] || '0');
+      const expB = parseFloat(b.experience?.match(/[\d.]+/)?.[0] || '0');
+      return expB - expA;
+
+    case 'education':
+      const eduRank = { PhD: 3, Master: 2, Bachelor: 1 };
+      const rankA = eduRank[a.education] || 0;
+      const rankB = eduRank[b.education] || 0;
+      return rankB - rankA;
+
+    case 'name':
+      return a.name?.localeCompare(b.name || '') || 0;
+
+    case 'rank':
+      const rankAVal = a.evaluation?.overall?.ranking || Infinity;
+      const rankBVal = b.evaluation?.overall?.ranking || Infinity;
+      return rankAVal - rankBVal; // lower rank is better
+
+    default:
+      const scoreA = a.evaluation?.overall?.score || 0;
+      const scoreB = b.evaluation?.overall?.score || 0;
+      return scoreB - scoreA;
+  }
+});
+
+
   
   // Pagination
   const indexOfLastCandidate = currentPage * candidatesPerPage;
@@ -86,6 +98,36 @@ export default function CandidatesTable({ candidates, loading, sortType }) {
     if (score >= 50) return 'Average';
     return 'Poor';
   };
+
+  const getRankBadge = (rank, totalCandidates) => {
+  if (!rank || !totalCandidates) return null;
+  
+  // Calculate dynamic thresholds based on total candidates
+  const goldThreshold = Math.ceil(totalCandidates * 0.1); // Top 10%
+  const silverThreshold = Math.ceil(totalCandidates * 0.3); // Next 20%
+  const bronzeThreshold = Math.ceil(totalCandidates * 0.6); // Next 30%
+
+  if (rank <= goldThreshold) {
+    return (
+      <Badge className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white">
+        Gold
+      </Badge>
+    );
+  } else if (rank <= silverThreshold) {
+    return (
+      <Badge className="bg-gradient-to-r from-gray-300 to-gray-400 text-white">
+        Silver
+      </Badge>
+    );
+  } else if (rank <= bronzeThreshold) {
+    return (
+      <Badge className="bg-gradient-to-r from-amber-600 to-amber-800 text-white">
+        Bronze
+      </Badge>
+    );
+  }
+  return null;
+};
   
   return (
     <Card>
@@ -118,6 +160,7 @@ export default function CandidatesTable({ candidates, loading, sortType }) {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead>
                   <tr className="bg-gray-50">
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Experience</th>
@@ -130,6 +173,10 @@ export default function CandidatesTable({ candidates, loading, sortType }) {
                 <tbody className="divide-y divide-gray-200">
                   {currentCandidates.map((candidate, index) => (
                     <tr key={candidate.id || index} className="hover:bg-gray-50">
+                      <td className="px-4 py-4 whitespace-nowrap">
+                        {/* <div className="flex items-center">{candidate?.evaluation?.overall?.ranking}</div></td> */}
+                        <div className="flex items-center">{index+1}</div></td>
+
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="h-10 w-10 flex-shrink-0">
@@ -151,10 +198,10 @@ export default function CandidatesTable({ candidates, loading, sortType }) {
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="text-sm text-text">{candidate.email}</div>
-                        <div className="text-sm text-gray-500">{candidate.phone || 'No phone provided'}</div>
+                        <div className="text-sm text-gray-500">{candidate.contact || 'No phone provided'}</div>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="text-sm text-text">{candidate.experience || 'Unknown'}</div>
+                        <div className="text-sm text-text">{candidate.experience || '0'}</div>
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap">
                         <div className="text-sm text-text">{candidate.location || 'Unknown'}</div>

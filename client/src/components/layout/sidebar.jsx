@@ -32,7 +32,7 @@ export default function Sidebar() {
   const toggleCollapse = () => setCollapsed(!collapsed);
   
   const navItems = [
-    { title: 'Dashboard', icon: <LayoutDashboard className="h-5 w-5" />, path: '/' },
+    { title: 'Dashboard', icon: <LayoutDashboard className="h-5 w-5" />, path: '/dashboard' },
     { title: 'Resume Analyzer', icon: <FileSearch className="h-5 w-5" />, path: '/resume-analyzer' },
     { title: 'Analysis Queue', icon: <Clock className="h-5 w-5" />, path: '/analysis-queue' },
     { title: 'Results', icon: <BarChartBig className="h-5 w-5" />, path: '/results' },
