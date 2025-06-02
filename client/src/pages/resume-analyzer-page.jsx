@@ -22,6 +22,51 @@ import LoaderOverlay from '../components/ui/loader-overlay';
 import { dummyCandidates } from '../components/ui/dummyData';
 import Loader from '../components/ui/Loader/Loader';
 
+import { User, Briefcase, Building2, MapPin, Star, Globe, BookText, Languages } from 'lucide-react'; // Place at the top of your file
+
+const inputIcons = {
+  name: <User className="w-5 h-5 text-blue-400" />,
+  jobTitle: <Briefcase className="w-5 h-5 text-indigo-400" />,
+  department: <Building2 className="w-5 h-5 text-gray-400" />,
+  experience: <Star className="w-5 h-5 text-yellow-400" />,
+  location: <MapPin className="w-5 h-5 text-pink-400" />,
+  skills: <Star className="w-5 h-5 text-green-400" />,
+  education: <BookText className="w-5 h-5 text-purple-400" />,
+  industry: <Globe className="w-5 h-5 text-blue-400" />,
+  languages: <Languages className="w-5 h-5 text-orange-400" />,
+};
+
+const StunningInput = ({ label, placeholder, name, control }) => (
+  <FormField
+    control={control}
+    name={name}
+    render={({ field }) => (
+      <FormItem className="bg-white/60 backdrop-blur-md rounded-2xl border border-blue-100 p-4 shadow-lg transition-all hover:shadow-xl">
+        <FormLabel className="text-gray-700 font-semibold mb-1">{label}</FormLabel>
+        <FormControl>
+          <div className="relative">
+            {inputIcons[name.split('.').pop()] && (
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                {inputIcons[name.split('.').pop()]}
+              </span>
+            )}
+            <Input
+              placeholder={placeholder}
+              {...field}
+              className={`
+                mt-2 pl-12 pr-4 py-2 w-full rounded-full bg-white/80 border border-blue-200
+                focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400
+                text-gray-800 placeholder-gray-400 shadow-inner transition-all
+              `}
+            />
+          </div>
+        </FormControl>
+        <FormMessage />
+      </FormItem>
+    )}
+  />
+);
+
 // Form schema based on the analysis requirements
 const analysisFormSchema = z.object({
   name: z.string().min(3, "Analysis name must be at least 3 characters"),
@@ -40,27 +85,6 @@ const analysisFormSchema = z.object({
     priorityEducation: z.string().optional(),
   }).optional(),
 });
-
-const StunningInput = ({ label, placeholder, name, control }) => (
-  <FormField
-    control={control}
-    name={name}
-    render={({ field }) => (
-      <FormItem className="bg-white/70 rounded-3xl border p-5 shadow-inner">
-        <FormLabel className="text-gray-700 font-medium">{label}</FormLabel>
-        <FormControl>
-          <Input
-            placeholder={placeholder}
-            {...field}
-            className="mt-2 rounded-full px-4 py-2 bg-white shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </FormControl>
-        <FormMessage />
-      </FormItem>
-    )}
-  />
-);
-
 
 
 export default function ResumeAnalyzerPage() {
@@ -132,175 +156,7 @@ export default function ResumeAnalyzerPage() {
     },
   });
 
-  // Create analysis mutation - modified to work without backend
-  const createAnalysisMutation = useMutation({
-    mutationFn: async (data) => {
-      // Simulate API call with 1 second delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Generate a random ID for the analysis
-      const analysisId = Math.floor(Math.random() * 10000) + 1;
-
-      // Create a mock analysis object
-      const analysis = {
-        id: analysisId,
-        ...data,
-        createdById: 1,
-        status: 'processing',
-        candidateCount: uploadedFiles.length,
-        averageScore: 0,
-        createdAt: new Date().toISOString()
-      };
-
-      // Store in sessionStorage to persist through page navigation
-      const analyses = JSON.parse(sessionStorage.getItem('analyses') || '[]');
-      analyses.push(analysis);
-      sessionStorage.setItem('analyses', JSON.stringify(analyses));
-
-      // Generate notifications
-      const notification = {
-        id: Math.floor(Math.random() * 10000) + 1,
-        userId: 1,
-        title: 'Analysis Started',
-        message: `Your analysis "${data.name}" is now processing.`,
-        type: 'info',
-        isRead: false,
-        createdAt: new Date().toISOString(),
-        relatedId: analysisId,
-        relatedType: 'analysis'
-      };
-
-      const notifications = JSON.parse(sessionStorage.getItem('notifications') || '[]');
-      notifications.push(notification);
-      sessionStorage.setItem('notifications', JSON.stringify(notifications));
-
-      return analysis;
-    },
-    onSuccess: (data) => {
-      toast({
-        title: 'Analysis created',
-        description: 'Your resume analysis has been started',
-      });
-
-      // Simulate starting the analysis process
-      simulateAnalysisProgress(data.id);
-
-      // Navigate to the results page directly for testing
-      setTimeout(() => {
-        navigate('/results');
-      }, 1000);
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error',
-        description: error.message || 'There was an error creating your analysis',
-        variant: 'destructive',
-      });
-    },
-  });
-
-  // Mock function to simulate the analysis progress with tiered results
-  const simulateAnalysisProgress = async (analysisId) => {
-    try {
-      // Generate mock candidates based on uploaded files
-      if (uploadedFiles.length > 0) {
-        // Create a range of scores to simulate a realistic distribution
-        const generateTieredScore = (index, total) => {
-          // Top 10% get exceptional scores (90-98)
-          if (index < total * 0.1) {
-            return Math.floor(Math.random() * 8) + 90;
-          }
-          // Next 20% get strong scores (80-89)
-          else if (index < total * 0.3) {
-            return Math.floor(Math.random() * 9) + 80;
-          }
-          // Middle 30% get average scores (70-79)
-          else if (index < total * 0.6) {
-            return Math.floor(Math.random() * 9) + 70;
-          }
-          // Next 30% get below average scores (60-69)
-          else if (index < total * 0.9) {
-            return Math.floor(Math.random() * 9) + 60;
-          }
-          // Bottom 10% get poor scores (50-59)
-          else {
-            return Math.floor(Math.random() * 9) + 50;
-          }
-        };
-
-        // Shuffle the files to randomize who gets what tier
-        const shuffledFiles = [...uploadedFiles].sort(() => Math.random() - 0.5);
-
-        const mockCandidates = shuffledFiles.map((file, index) => {
-          // Calculate the score based on position in the array
-          const matchScore = generateTieredScore(index, uploadedFiles.length);
-
-          // Determine tier based on score
-          let tier;
-          if (matchScore >= 90) tier = 'exceptional';
-          else if (matchScore >= 80) tier = 'strong';
-          else if (matchScore >= 70) tier = 'qualified';
-          else if (matchScore >= 60) tier = 'potential';
-          else tier = 'notRecommended';
-
-          return {
-            id: Math.floor(Math.random() * 10000) + index + 1,
-            analysisId,
-            name: file.name.split('.')[0].replace(/_/g, ' '),
-            email: `${file.name.split('.')[0].toLowerCase().replace(/_/g, '.')}@example.com`,
-            phone: `+1 (555) ${String(Math.floor(Math.random() * 900) + 100)}-${String(Math.floor(Math.random() * 9000) + 1000)}`,
-            location: ['San Francisco, CA', 'New York, NY', 'Seattle, WA', 'Austin, TX'][Math.floor(Math.random() * 4)],
-            experience: `${Math.floor(Math.random() * 8) + 1}.${Math.floor(Math.random() * 9)} years`,
-            education: ['Bachelor', 'Master', 'PhD'][Math.floor(Math.random() * 3)],
-            skills: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Cloud'].slice(0, Math.floor(Math.random() * 4) + 2),
-            matchScore,
-            tier,
-            resumeText: 'Resume content would be here in a real application',
-            createdAt: new Date().toISOString()
-          };
-        });
-
-        // Store candidates in sessionStorage
-        const candidates = JSON.parse(sessionStorage.getItem('candidates') || '[]');
-        sessionStorage.setItem('candidates', JSON.stringify([...candidates, ...mockCandidates]));
-
-        // Update analysis status to completed after 2 seconds
-        setTimeout(() => {
-          const analyses = JSON.parse(sessionStorage.getItem('analyses') || '[]');
-          const updatedAnalyses = analyses.map(a => {
-            if (a.id === analysisId) {
-              // Calculate average score
-              const avgScore = Math.round(mockCandidates.reduce((acc, c) => acc + c.matchScore, 0) / mockCandidates.length);
-              return { ...a, status: 'completed', averageScore: avgScore };
-            }
-            return a;
-          });
-          sessionStorage.setItem('analyses', JSON.stringify(updatedAnalyses));
-
-          // Add completion notification
-          const notifications = JSON.parse(sessionStorage.getItem('notifications') || '[]');
-          const completionNotification = {
-            id: Math.floor(Math.random() * 10000) + 100,
-            userId: 1,
-            title: 'Analysis Complete',
-            message: `Your analysis with ${mockCandidates.length} candidate(s) is now ready to view.`,
-            type: 'success',
-            isRead: false,
-            createdAt: new Date().toISOString(),
-            relatedId: analysisId,
-            relatedType: 'analysis'
-          };
-          notifications.push(completionNotification);
-          sessionStorage.setItem('notifications', JSON.stringify(notifications));
-
-          // Force refresh to show the notification
-          queryClient.invalidateQueries();
-        }, 2000);
-      }
-    } catch (error) {
-      console.error('Error simulating analysis progress:', error);
-    }
-  };
+ 
 
   // Handle form submission
   const onSubmit = async (data) => {
@@ -326,10 +182,16 @@ export default function ResumeAnalyzerPage() {
       const formData = new FormData();
       formData.append('job_description', data?.jobDescription);
       formData.append('resumes_zip_file', uploadedFiles?.[0]);
-
+        
       // const url='http://127.0.0.1:8000/api/';
       const url = 'https://rayappan.pythonanywhere.com/api/'
       // const url ='http://localhost:3001/api/'
+
+
+      // setAnalysisResults({
+      //   candidates : dummyCandidates
+      // })
+      //  navigate('/results');
 
       const res = await fetch(`${url}`, {
         method: 'POST',
@@ -365,6 +227,10 @@ export default function ResumeAnalyzerPage() {
   // Call your API or function here
 };
 
+function capitalize(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
   return (
    <PageContainer>
@@ -392,7 +258,7 @@ export default function ResumeAnalyzerPage() {
             name="jobDescription"
             render={({ field }) => (
               <FormItem className="bg-white/60 rounded-3xl border p-6 shadow-inner">
-                <FormLabel className="text-lg text-gray-700">Job Description</FormLabel>
+                {/* <FormLabel className="text-lg text-gray-700">Job Description</FormLabel> */}
                 <FormControl>
                   <JobDescriptionInput field={field} onChange={field?.onChange} />
                 </FormControl>
@@ -401,28 +267,16 @@ export default function ResumeAnalyzerPage() {
             )}
           />
 
-          <div className="bg-blue-50/70 border border-dashed border-blue-400 rounded-3xl p-6">
+          <div className="bg-blue-50/70 border border-grey-400 rounded-3xl p-6">
             <ResumeDropzone
-              uploadedFiles={uploadedFiles}
-              setUploadedFiles={setUploadedFiles}
+              files={uploadedFiles}
               setUploadProgress={setUploadProgress}
               setFiles={setUploadedFiles}
               
             />
           </div>
 
-          {uploadedFiles?.length > 0 && (
-  <div className="mt-4 max-h-60 overflow-y-auto rounded-xl border p-4 bg-white shadow">
-    <h3 className="text-lg font-semibold mb-2 text-gray-700">Uploaded Resumes</h3>
-    <ul className="space-y-2">
-      {uploadedFiles?.map((file, idx) => (
-        <li key={idx} className="text-sm text-gray-800 truncate border-b pb-1">
-          📄 {file?.name}
-        </li>
-      ))}
-    </ul>
-  </div>
-)}
+          
 
           <div className="text-right">
             <button

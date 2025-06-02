@@ -20,6 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import SettingsPage from '../../pages/settings-page';
 
 export default function Sidebar() {
   const [location] = useLocation();
@@ -34,7 +35,7 @@ export default function Sidebar() {
   const navItems = [
     { title: 'Dashboard', icon: <LayoutDashboard className="h-5 w-5" />, path: '/dashboard' },
     { title: 'Resume Analyzer', icon: <FileSearch className="h-5 w-5" />, path: '/resume-analyzer' },
-    { title: 'Analysis Queue', icon: <Clock className="h-5 w-5" />, path: '/analysis-queue' },
+    // { title: 'Analysis Queue', icon: <Clock className="h-5 w-5" />, path: '/analysis-queue' },
     { title: 'Results', icon: <BarChartBig className="h-5 w-5" />, path: '/results' },
     { title: 'History', icon: <History className="h-5 w-5" />, path: '/history' },
     { title: 'Settings', icon: <Settings className="h-5 w-5" />, path: '/settings' },

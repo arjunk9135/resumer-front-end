@@ -1,10 +1,12 @@
-import { useState, useEffect , useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Redirect } from "wouter";
 import { insertUserSchema } from "@shared/schema";
 import { useLocation } from "wouter";
+import { useToast } from '@/hooks/use-toast';
+import Cookies from 'js-cookie';
 
 import {
   Button,
@@ -22,7 +24,7 @@ import {
   Checkbox,
   FormMessage,
   Input,
-    Tabs,
+  Tabs,
   TabsList,
   TabsTrigger,
   TabsContent
@@ -177,7 +179,7 @@ function ParticleCanvas() {
 const loginSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  rememberMe: z.boolean().optional(),
+  // rememberMe: z.boolean().optional(),
 });
 
 // Register Schema
@@ -196,8 +198,9 @@ export default function AuthPage() {
   const [activeTab, setActiveTab] = useState("login");
   const { user, loginMutation, registerMutation } = useAuth();
   const [animationStep, setAnimationStep] = useState(0);
+  const { toast } = useToast();
 
-  const loginForm = useForm({ defaultValues: { username: "", password: "", rememberMe: false } });
+  const loginForm = useForm({ defaultValues: { email: "", password: "" } });
   const registerForm = useForm({
     defaultValues: {
       username: "",
@@ -214,21 +217,104 @@ export default function AuthPage() {
     return () => clearInterval(timer);
   }, []);
 
-  function onLoginSubmit(data) {
-    loginMutation.mutate(data);
-    navigate("/dashboard");
+  // authApi.js
+
+  const signup = async (userData) => {
+    try {
+      const response = await fetch("http://localhost:5001/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "include", // important for cookies
+        body: JSON.stringify(userData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData?.errors?.[0]?.msg || "Signup failed");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("❌ Signup error:", error.message);
+      throw error;
+    }
   }
 
-  function onRegisterSubmit(data) {
-    const { confirmPassword, acceptTerms, ...userData } = data;
-    registerMutation.mutate(userData);
+  const signin = async (userData) => {
+    try {
+      const response = await fetch("http://localhost:5001/api/auth/signin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "include", // to send/receive cookies
+        body: JSON.stringify(userData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log('Error data:', errorData);
+        throw new Error(errorData?.errors?.[0]?.msg || "Login failed");
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("❌ Login error:", error.message);
+      throw error;
+    }
   }
+
+  async function onLoginSubmit(data) {
+    try {
+      const res = await signin(data);
+      if (res) {
+        toast({
+          title: 'Error',
+          description: 'Login successful. Redirecting...',
+          // variant: 'destructive',
+        });
+        console.log("✅ Login successful:", res);
+        Cookies.set('accessToken', res?.accessToken, {
+          expires: 1, // Expires in 1 day
+          secure: true, // Only send over HTTPS
+          sameSite: 'strict', // Protection against CSRF
+          path: '/', // Accessible across the entire site
+        });
+        navigate("/dashboard");
+      }
+    } catch (err) {
+      console.log('Error in login \n\n\n', err)
+      toast({
+        title: 'Error',
+        description: err.message || 'Something went wrong',
+        variant: 'destructive',
+      });
+      // removed alert
+    }
+  }
+
+  async function onRegisterSubmit(data) {
+    try {
+      const { confirmPassword, acceptTerms, ...userData } = data;
+      const res = await signup(userData);
+      if (res) {
+        toast.success("Registration complete. Please log in.");
+        console.log("✅ Signup successful:", res);
+      }
+    } catch (err) {
+      toast.error(err.message || "Registration failed. Please try again.");
+      // removed alert
+    }
+  }
+
 
   if (false) return <Redirect to="/" />;
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-white text-[rgb(3,7,18)]">
-     {/* LEFT PANEL — ULTRA ANIMATED */}
+      {/* LEFT PANEL — ULTRA ANIMATED */}
       <div className="relative hidden md:flex md:w-1/2 bg-[rgb(3,7,18)] text-white overflow-hidden items-center justify-center p-10">
         <ParticleCanvas />
 
@@ -268,7 +354,7 @@ export default function AuthPage() {
               },
               {
                 title: "Deep AI Insights",
-                icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>,
+                icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>,
                 desc: "Find hidden gems in seconds with advanced ML models.",
               },
             ].map((item, index) => (
@@ -304,9 +390,9 @@ export default function AuthPage() {
               <TabsContent value="login">
                 <Form {...loginForm}>
                   <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-                    <FormField name="username" control={loginForm.control} render={({ field }) => (
+                    <FormField name="email" control={loginForm.control} render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Username</FormLabel>
+                        <FormLabel>Email</FormLabel>
                         <FormControl><Input {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
@@ -320,12 +406,12 @@ export default function AuthPage() {
                       </FormItem>
                     )} />
 
-                    <FormField name="rememberMe" control={loginForm.control} render={({ field }) => (
+                    {/* <FormField name="rememberMe" control={loginForm.control} render={({ field }) => (
                       <FormItem className="flex items-center space-x-2">
                         <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                         <FormLabel>Remember me</FormLabel>
                       </FormItem>
-                    )} />
+                    )} /> */}
 
                     <Button type="submit" className="w-full">Login</Button>
                   </form>

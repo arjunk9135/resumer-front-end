@@ -40,8 +40,9 @@ export default function TieredCandidates({ candidates }) {
       experience: `${c.evaluation?.relevant_experience?.score}/10` || 'N/A',
       education: `${c.evaluation?.achievements?.score}/10` || 'N/A',
       location: `${c.evaluation?.professionalism?.score}/10` || 'N/A',
+      clarity: `${c.evaluation?.clarity_and_structure?.score}/10` || 0,
       skills: [
-        `Clarity: ${c.evaluation?.clarity_and_structure?.score}/10`,
+        `Experience: ${c.evaluation?.relevant_experience?.score}/10`,
         `Skills Match: ${c.evaluation?.skills_match?.score}/10`,
       ],
     };
@@ -150,8 +151,9 @@ export default function TieredCandidates({ candidates }) {
                       <h4 className="font-medium text-sm">{candidate.name}</h4>
                       <Badge className="ml-2">{candidate.matchScore}%</Badge>
                     </div>
+                    {console.log('candidate', candidate)}
                     <p className="text-xs text-gray-500 mt-1">
-                      Experience: {candidate.experience} • Education Score: {candidate.education} • Professionalism: {candidate.location}
+                      Clarity: {candidate?.clarity} • Education Score: {candidate.education}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1">
                       {candidate.skills.map((skill, i) => (

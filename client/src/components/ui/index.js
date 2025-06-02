@@ -19,4 +19,6 @@ export * from "./dialog";
 export * from "./drawer";
 export * from "./form"; 
 export * from "./checkbox";
+export * from "./separator";
+export * from "./switch";
 export * from "./tabs"; // 👈 Add this line
