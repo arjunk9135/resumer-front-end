@@ -200,6 +200,9 @@ export default function AuthPage() {
   const [animationStep, setAnimationStep] = useState(0);
   const { toast } = useToast();
 
+  const baseUrlDev = "http://localhost:5001/api/auth";
+  const baseUrlTest = "http://13.60.98.6:5001/api/auth";
+
   const loginForm = useForm({ defaultValues: { email: "", password: "" } });
   const registerForm = useForm({
     defaultValues: {
@@ -221,7 +224,7 @@ export default function AuthPage() {
 
   const signup = async (userData) => {
     try {
-      const response = await fetch("http://localhost:5001/api/auth/signup", {
+      const response = await fetch(`${baseUrlTest}/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -244,7 +247,7 @@ export default function AuthPage() {
 
   const signin = async (userData) => {
     try {
-      const response = await fetch("http://localhost:5001/api/auth/signin", {
+      const response = await fetch(`${baseUrlTest}/signin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
