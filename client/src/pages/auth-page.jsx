@@ -7,6 +7,7 @@ import { insertUserSchema } from "@shared/schema";
 import { useLocation } from "wouter";
 import { useToast } from '@/hooks/use-toast';
 import Cookies from 'js-cookie';
+import { FcGoogle } from "react-icons/fc"; // Import Google icon from react-icons
 
 import {
   Button,
@@ -201,7 +202,8 @@ export default function AuthPage() {
   const { toast } = useToast();
 
   const baseUrlDev = "http://localhost:5001/api/auth";
-  const baseUrlTest = "http://13.60.98.6:5001/api/auth";
+  // const baseUrlTest = "http://13.60.98.6:5001/api/auth";
+  const baseUrlTest = "api/auth"
 
   const loginForm = useForm({ defaultValues: { email: "", password: "" } });
   const registerForm = useForm({
@@ -237,7 +239,7 @@ export default function AuthPage() {
         const errorData = await response.json();
         throw new Error(errorData?.errors?.[0]?.msg || "Signup failed");
       }
-
+      setActiveTab("login");
       return await response.json();
     } catch (error) {
       console.error("❌ Signup error:", error.message);
@@ -274,27 +276,24 @@ export default function AuthPage() {
       const res = await signin(data);
       if (res) {
         toast({
-          title: 'Error',
-          description: 'Login successful. Redirecting...',
-          // variant: 'destructive',
+          title: "Success",
+          description: "Login successful. Redirecting...",
+          variant: "success",
         });
-        console.log("✅ Login successful:", res);
-        Cookies.set('accessToken', res?.accessToken, {
-          expires: 1, // Expires in 1 day
-          secure: true, // Only send over HTTPS
-          sameSite: 'strict', // Protection against CSRF
-          path: '/', // Accessible across the entire site
+        Cookies.set("accessToken", res?.accessToken, {
+          expires: 1,
+          secure: true,
+          sameSite: "strict",
+          path: "/",
         });
         navigate("/dashboard");
       }
     } catch (err) {
-      console.log('Error in login \n\n\n', err)
       toast({
-        title: 'Error',
-        description: err.message || 'Something went wrong',
-        variant: 'destructive',
+        title: "Error",
+        description: err.message || "Login failed. Please try again.",
+        variant: "destructive",
       });
-      // removed alert
     }
   }
 
@@ -303,12 +302,19 @@ export default function AuthPage() {
       const { confirmPassword, acceptTerms, ...userData } = data;
       const res = await signup(userData);
       if (res) {
-        toast.success("Registration complete. Please log in.");
-        console.log("✅ Signup successful:", res);
+        toast({
+          title: "Success",
+          description: "Registration complete. Please log in.",
+          variant: "success",
+        });
+        setActiveTab("login");
       }
     } catch (err) {
-      toast.error(err.message || "Registration failed. Please try again.");
-      // removed alert
+      toast({
+        title: "Error",
+        description: err.message || "Registration failed. Please try again.",
+        variant: "destructive",
+      });
     }
   }
 
@@ -316,74 +322,38 @@ export default function AuthPage() {
   if (false) return <Redirect to="/" />;
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-white text-[rgb(3,7,18)]">
-      {/* LEFT PANEL — ULTRA ANIMATED */}
+    <div className="min-h-screen flex flex-col md:flex-row bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+      {/* LEFT PANEL */}
       <div className="relative hidden md:flex md:w-1/2 bg-[rgb(3,7,18)] text-white overflow-hidden items-center justify-center p-10">
         <ParticleCanvas />
-
-        {/* TEXT CONTENT */}
         <div className="relative z-10 max-w-lg text-left space-y-6 animate-fade-up">
-          <div className="flex items-center space-x-3">
-            <div className="bg-white text-[rgb(3,7,18)] p-2 rounded-lg shadow-lg">
-              <BriefcaseBusiness className="h-6 w-6" />
-            </div>
-            <h1 className="text-4xl font-extrabold font-display tracking-tight">Resumer AI</h1>
-          </div>
-
+          <h1 className="text-4xl font-extrabold font-display tracking-tight">
+            Resumer AI
+          </h1>
           <h2 className="text-3xl font-semibold leading-snug font-display">
             Unlock a Future-Ready Hiring Experience
           </h2>
           <p className="text-white/80 text-lg">
-            Make hiring smarter, faster and jaw-droppingly smooth. Let AI handle the heavy lifting while you sip coffee.
+            Make hiring smarter, faster, and jaw-droppingly smooth. Let AI handle the heavy lifting while you sip coffee.
           </p>
-
-          {/* Dynamic Highlights */}
-          <div className="space-y-8">
-            {[
-              {
-                title: "Smart Resume Screening",
-                icon: <UserRound className="h-6 w-6" />,
-                desc: "Analyze 200+ resumes in seconds using smart AI.",
-              },
-              {
-                title: "Powerful Visual Analytics",
-                icon: <LineChart className="h-6 w-6" />,
-                desc: "Gain rich insights into candidate metrics with visuals.",
-              },
-              {
-                title: "Lightning-Fast Workflows",
-                icon: <Clock className="h-6 w-6" />,
-                desc: "Cut resume review time by 75% via automation.",
-              },
-              {
-                title: "Deep AI Insights",
-                icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>,
-                desc: "Find hidden gems in seconds with advanced ML models.",
-              },
-            ].map((item, index) => (
-              <div key={index} className={`transition-all duration-700 ${animationStep === index ? "opacity-100" : "opacity-0 absolute"} flex items-start space-x-4`}>
-                <div className="bg-white/20 p-3 rounded-xl shadow-lg">{item.icon}</div>
-                <div>
-                  <h3 className="text-xl font-medium">{item.title}</h3>
-                  <p className="text-white/80">{item.desc}</p>
-                  <Button variant="link" className="text-white mt-2 p-0 group">
-                    Learn more <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
-      {/* RIGHT PANEL — LOGIN/REGISTER */}
+
+      {/* RIGHT PANEL */}
       <div className="flex-1 flex items-center justify-center p-6 md:p-12 bg-white text-[rgb(3,7,18)]">
-        <Card className="w-full max-w-md shadow-xl">
+        <Card className="w-full max-w-md shadow-xl rounded-3xl">
           <CardHeader>
-            <CardTitle className="text-2xl font-bold">{activeTab === "login" ? "Login" : "Register"}</CardTitle>
-            <CardDescription>Welcome back to Resumer AI</CardDescription>
+            <CardTitle className="text-2xl font-bold">
+              {activeTab === "login" ? "Login" : "Register"}
+            </CardTitle>
+            <CardDescription>
+              {activeTab === "login"
+                ? "Welcome back to Resumer AI"
+                : "Create an account to get started"}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="login" onValueChange={setActiveTab}>
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid grid-cols-2 mb-6">
                 <TabsTrigger value="login">Login</TabsTrigger>
                 <TabsTrigger value="register">Register</TabsTrigger>
@@ -392,31 +362,65 @@ export default function AuthPage() {
               {/* LOGIN FORM */}
               <TabsContent value="login">
                 <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-                    <FormField name="email" control={loginForm.control} render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField name="password" control={loginForm.control} render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl><Input type="password" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    {/* <FormField name="rememberMe" control={loginForm.control} render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                        <FormLabel>Remember me</FormLabel>
-                      </FormItem>
-                    )} /> */}
-
-                    <Button type="submit" className="w-full">Login</Button>
+                  <form
+                    onSubmit={loginForm.handleSubmit(onLoginSubmit)}
+                    className="space-y-4"
+                  >
+                    <FormField
+                      name="email"
+                      control={loginForm.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="email"
+                              {...field}
+                              className="rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      name="password"
+                      control={loginForm.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="password"
+                              {...field}
+                              className="rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button
+                      type="submit"
+                      className="w-full py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg transform transition-all duration-300 hover:scale-105"
+                    >
+                      Login
+                    </Button>
+                    <div className="flex items-center my-4">
+                      <div className="flex-grow border-t border-gray-300"></div>
+                      <span className="mx-4 text-sm text-gray-500">
+                        Or sign in with below methods
+                      </span>
+                      <div className="flex-grow border-t border-gray-300"></div>
+                    </div>
+                    <div className="flex justify-center">
+                      <button
+                        type="button"
+                        className="flex items-center justify-center w-12 h-12 rounded-full border border-gray-300 hover:border-indigo-500 shadow-md transition-all duration-300 hover:scale-105"
+                      >
+                        <FcGoogle className="h-6 w-6" />
+                      </button>
+                    </div>
                   </form>
                 </Form>
               </TabsContent>
@@ -424,55 +428,129 @@ export default function AuthPage() {
               {/* REGISTER FORM */}
               <TabsContent value="register">
                 <Form {...registerForm}>
-                  <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
-                    <FormField name="fullName" control={registerForm.control} render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Full Name</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField name="email" control={registerForm.control} render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl><Input type="email" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField name="username" control={registerForm.control} render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Username</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField name="password" control={registerForm.control} render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl><Input type="password" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField name="confirmPassword" control={registerForm.control} render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Confirm Password</FormLabel>
-                        <FormControl><Input type="password" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField name="acceptTerms" control={registerForm.control} render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                        <FormLabel>I agree to the terms</FormLabel>
-                      </FormItem>
-                    )} />
-
-                    <Button type="submit" className="w-full">Create Account</Button>
+                  <form
+                    onSubmit={registerForm.handleSubmit(onRegisterSubmit)}
+                    className="space-y-4"
+                  >
+                    <FormField
+                      name="fullName"
+                      control={registerForm.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Full Name</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              className="rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      name="email"
+                      control={registerForm.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="email"
+                              {...field}
+                              className="rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      name="username"
+                      control={registerForm.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Username</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              className="rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      name="password"
+                      control={registerForm.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="password"
+                              {...field}
+                              className="rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      name="confirmPassword"
+                      control={registerForm.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirm Password</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="password"
+                              {...field}
+                              className="rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      name="acceptTerms"
+                      control={registerForm.control}
+                      render={({ field }) => (
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormLabel>I agree to the terms</FormLabel>
+                        </FormItem>
+                      )}
+                    />
+                    <Button
+                      type="submit"
+                      className="w-full py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg transform transition-all duration-300 hover:scale-105"
+                    >
+                      Create Account
+                    </Button>
+                    <div className="flex items-center my-4">
+                      <div className="flex-grow border-t border-gray-300"></div>
+                      <span className="mx-4 text-sm text-gray-500">
+                        Or sign in with below methods
+                      </span>
+                      <div className="flex-grow border-t border-gray-300"></div>
+                    </div>
+                    <div className="flex justify-center">
+                      <button
+                        type="button"
+                        className="flex items-center justify-center w-12 h-12 rounded-full border border-gray-300 hover:border-indigo-500 shadow-md transition-all duration-300 hover:scale-105"
+                      >
+                        <FcGoogle className="h-6 w-6" />
+                      </button>
+                    </div>
                   </form>
                 </Form>
               </TabsContent>

@@ -12,23 +12,24 @@ export default function CandidatesTable({ candidates, loading, sortType }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [candidatesPerPage] = useState(10);
   const { toast } = useToast();
-  
+
   // Filter candidates by search term
-  const filteredCandidates = candidates.filter(candidate => {
+  const filteredCandidates = candidates.filter((candidate) => {
     if (!searchTerm) return true;
-    
+
     const searchLower = searchTerm.toLowerCase();
     return (
       candidate.name?.toLowerCase().includes(searchLower) ||
       candidate.email?.toLowerCase().includes(searchLower) ||
       candidate.location?.toLowerCase().includes(searchLower) ||
-      (Array.isArray(candidate.skills) && 
-        candidate.skills.some(skill => skill.toLowerCase().includes(searchLower)))
+      (Array.isArray(candidate.skills) &&
+        candidate.skills.some((skill) => skill.toLowerCase().includes(searchLower)))
     );
   });
-  
+
   // Sort candidates based on sort type
- const sortedCandidates = [...filteredCandidates].sort((a, b) => {
+// Sort candidates based on sort type
+const sortedCandidates = [...filteredCandidates].sort((a, b) => {
   switch (sortType) {
     case 'match':
       return (b.matchScore || 0) - (a.matchScore || 0);
@@ -53,20 +54,19 @@ export default function CandidatesTable({ candidates, loading, sortType }) {
       return rankAVal - rankBVal; // lower rank is better
 
     default:
-      const scoreA = a.evaluation?.overall?.score || 0;
-      const scoreB = b.evaluation?.overall?.score || 0;
+      // Sort by overall score (highest to lowest)
+      const scoreA = a?.evaluation?.overall?.score || 0;
+      const scoreB = b?.evaluation?.overall?.score || 0;
       return scoreB - scoreA;
   }
 });
 
-
-  
   // Pagination
   const indexOfLastCandidate = currentPage * candidatesPerPage;
   const indexOfFirstCandidate = indexOfLastCandidate - candidatesPerPage;
   const currentCandidates = sortedCandidates.slice(indexOfFirstCandidate, indexOfLastCandidate);
   const totalPages = Math.ceil(filteredCandidates.length / candidatesPerPage);
-  
+
   // Handle contact button click
   const handleContact = (candidate) => {
     toast({
@@ -74,7 +74,7 @@ export default function CandidatesTable({ candidates, loading, sortType }) {
       description: `An email has been sent to ${candidate.email}`,
     });
   };
-  
+
   // Handle view details click
   const handleViewDetails = (candidate) => {
     toast({
@@ -82,15 +82,15 @@ export default function CandidatesTable({ candidates, loading, sortType }) {
       description: `Details for ${candidate.name}`,
     });
   };
-  
+
   // Get match score color
   const getMatchScoreColor = (score) => {
-    if (score >= 90) return 'bg-green-100 text-green-800';
-    if (score >= 70) return 'bg-green-100 text-green-800';
-    if (score >= 50) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
+    if (score >= 90) return 'bg-green-500 text-white';
+    if (score >= 70) return 'bg-blue-500 text-white';
+    if (score >= 50) return 'bg-yellow-500 text-white';
+    return 'bg-red-500 text-white';
   };
-  
+
   // Get match score label
   const getMatchScoreLabel = (score) => {
     if (score >= 90) return 'Excellent';
@@ -99,231 +99,167 @@ export default function CandidatesTable({ candidates, loading, sortType }) {
     return 'Poor';
   };
 
-  const getRankBadge = (rank, totalCandidates) => {
-  if (!rank || !totalCandidates) return null;
-  
-  // Calculate dynamic thresholds based on total candidates
-  const goldThreshold = Math.ceil(totalCandidates * 0.1); // Top 10%
-  const silverThreshold = Math.ceil(totalCandidates * 0.3); // Next 20%
-  const bronzeThreshold = Math.ceil(totalCandidates * 0.6); // Next 30%
-
-  if (rank <= goldThreshold) {
-    return (
-      <Badge className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white">
-        Gold
-      </Badge>
-    );
-  } else if (rank <= silverThreshold) {
-    return (
-      <Badge className="bg-gradient-to-r from-gray-300 to-gray-400 text-white">
-        Silver
-      </Badge>
-    );
-  } else if (rank <= bronzeThreshold) {
-    return (
-      <Badge className="bg-gradient-to-r from-amber-600 to-amber-800 text-white">
-        Bronze
-      </Badge>
-    );
-  }
-  return null;
-};
-  
   return (
-    <Card>
-      <CardHeader className="px-6 py-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <CardTitle className="font-display font-semibold text-lg text-text">
-          Candidates ({filteredCandidates.length})
-        </CardTitle>
-        <div className="relative mt-2 sm:mt-0 w-full sm:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search candidates..."
-            className="pl-9"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-      </CardHeader>
-      <CardContent className="p-0">
-        {loading ? (
-          <div className="py-12 text-center">
-            <p className="text-gray-500">Loading candidates...</p>
-          </div>
-        ) : filteredCandidates.length === 0 ? (
-          <div className="py-12 text-center">
-            <p className="text-gray-500">No candidates found</p>
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Experience</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Match Score</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Skills</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {currentCandidates.map((candidate, index) => (
-                    <tr key={candidate.id || index} className="hover:bg-gray-50">
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        {/* <div className="flex items-center">{candidate?.evaluation?.overall?.ranking}</div></td> */}
-                        <div className="flex items-center">{index+1}</div></td>
+    <Card className="shadow-lg rounded-xl">
+      
+<Card className="shadow-lg rounded-xl">
+  {/* Header Section with Gradient Background */}
+  <CardHeader className="px-6 py-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gradient-to-r from-indigo-400 to-purple-400 text-white rounded-t-xl">
+    <CardTitle className="font-display font-semibold text-lg">
+      Candidates ({filteredCandidates.length})
+    </CardTitle>
+    <div className="relative mt-2 sm:mt-0 w-full sm:w-64">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-300" />
+      <Input
+        placeholder="Search candidates..."
+        className="pl-9 bg-gray-50 text-gray-800"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+    </div>
+  </CardHeader>
 
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="h-10 w-10 flex-shrink-0">
-                            <Avatar>
-                              <AvatarImage 
-                                src={`https://source.unsplash.com/random/100x100?face&${index}`} 
-                                alt={candidate.name} 
-                              />
-                              <AvatarFallback>{candidate.name?.[0] || 'C'}</AvatarFallback>
-                            </Avatar>
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-text">{candidate.name}</div>
-                            <div className="text-sm text-gray-500">
-                              {candidate.education || 'Unknown education'}
-                            </div>
-                          </div>
+  {/* Table Content */}
+  <CardContent className="p-0 bg-gray-50 text-gray-800">
+    {loading ? (
+      <div className="py-12 text-center">
+        <p className="text-gray-500">Loading candidates...</p>
+      </div>
+    ) : filteredCandidates.length === 0 ? (
+      <div className="py-12 text-center">
+        <p className="text-gray-500">No candidates found</p>
+      </div>
+    ) : (
+      <>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            {/* Table Header */}
+            <thead>
+              <tr className="bg-gray-100 text-gray-700">
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  Rank
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  Name
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  Contact
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  Experience
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  Location
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  Match Score
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  Skills
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            {/* Table Body */}
+            <tbody className="divide-y divide-gray-200">
+              {currentCandidates.map((candidate, index) => (
+                <tr key={candidate.id || index} className="hover:bg-gray-100">
+                  <td className="px-4 py-4 whitespace-nowrap">{index + 1}</td>
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <Avatar>
+                        <AvatarImage
+                          src={`https://source.unsplash.com/random/100x100?face&${index}`}
+                          alt={candidate.name}
+                        />
+                        <AvatarFallback>{candidate.name?.[0] || 'C'}</AvatarFallback>
+                      </Avatar>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-800">{candidate.name}</div>
+                        <div className="text-sm text-gray-500">
+                          {candidate.education || 'Unknown education'}
                         </div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="text-sm text-text">{candidate.email}</div>
-                        <div className="text-sm text-gray-500">{candidate.contact || 'No phone provided'}</div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="text-sm text-text">{candidate.experience || '0'}</div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="text-sm text-text">{candidate.location || 'Unknown'}</div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getMatchScoreColor(candidate?.evaluation?.overall?.score*10)}`}>
-                          <span className="font-bold mr-1">{candidate?.evaluation?.overall?.score*10}%</span> 
-                          {getMatchScoreLabel(candidate?.evaluation?.overall?.score*10)}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4">
-                        <div className="flex flex-wrap gap-1">
-                          {Array.isArray(candidate.skills) ? (
-                            <>
-                              {candidate.skills.slice(0, 3).map((skill, i) => (
-                                <Badge key={i} variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-200">
-                                  {skill}
-                                </Badge>
-                              ))}
-                              {candidate.skills.length > 3 && (
-                                <Badge variant="outline" className="bg-gray-100 text-gray-800">
-                                  +{candidate.skills.length - 3}
-                                </Badge>
-                              )}
-                            </>
-                          ) : (
-                            <span className="text-xs text-gray-500">No skills listed</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-800">{candidate.email}</div>
+                    <div className="text-sm text-gray-500">{candidate.contact || 'No phone provided'}</div>
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-800">{candidate.experience || '0'}</div>
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-800">{candidate.location || 'Unknown'}</div>
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap">
+                    <div
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getMatchScoreColor(
+                        candidate?.evaluation?.overall?.score * 10
+                      )}`}
+                    >
+                      <span className="font-bold mr-1">
+                        {candidate?.evaluation?.overall?.score * 10}%
+                      </span>
+                      {getMatchScoreLabel(candidate?.evaluation?.overall?.score * 10)}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex flex-wrap gap-1">
+                      {Array.isArray(candidate.skills) ? (
+                        <>
+                          {candidate.skills.slice(0, 3).map((skill, i) => (
+                            <Badge
+                              key={i}
+                              variant="secondary"
+                              className="bg-blue-500 text-white hover:bg-blue-600"
+                            >
+                              {skill}
+                            </Badge>
+                          ))}
+                          {candidate.skills.length > 3 && (
+                            <Badge variant="outline" className="bg-gray-200 text-gray-600">
+                              +{candidate.skills.length - 3}
+                            </Badge>
                           )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-primary mr-1"
-                          onClick={() => handleViewDetails(candidate)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="text-green-600"
-                          onClick={() => handleContact(candidate)}
-                        >
-                          <Mail className="h-4 w-4 mr-1" />
-                          Contact
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-500">
-                    Showing <span className="font-medium">{indexOfFirstCandidate + 1}</span> to{" "}
-                    <span className="font-medium">
-                      {Math.min(indexOfLastCandidate, filteredCandidates.length)}
-                    </span>{" "}
-                    of <span className="font-medium">{filteredCandidates.length}</span> candidates
-                  </div>
-                  <div className="flex space-x-2">
+                        </>
+                      ) : (
+                        <span className="text-xs text-gray-500">No skills listed</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
-                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
+                      className="text-indigo-500 hover:text-indigo-600 mr-1"
+                      onClick={() => handleViewDetails(candidate)}
                     >
-                      Previous
+                      <Eye className="h-4 w-4 mr-1" />
+                      View
                     </Button>
-                    
-                    {Array.from({ length: Math.min(totalPages, 5) }).map((_, i) => {
-                      const pageNumber = i + 1;
-                      return (
-                        <Button
-                          key={i}
-                          variant="outline"
-                          size="sm"
-                          className={currentPage === pageNumber ? "bg-primary text-white" : ""}
-                          onClick={() => setCurrentPage(pageNumber)}
-                        >
-                          {pageNumber}
-                        </Button>
-                      );
-                    })}
-                    
-                    {totalPages > 5 && (
-                      <>
-                        <Button variant="outline" size="sm" disabled>
-                          ...
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setCurrentPage(totalPages)}
-                        >
-                          {totalPages}
-                        </Button>
-                      </>
-                    )}
-                    
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                      disabled={currentPage === totalPages}
+                      className="text-green-500 hover:text-green-600"
+                      onClick={() => handleContact(candidate)}
                     >
-                      Next
+                      <Mail className="h-4 w-4 mr-1" />
+                      Contact
                     </Button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </CardContent>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </>
+    )}
+  </CardContent>
+</Card>
+
     </Card>
   );
 }

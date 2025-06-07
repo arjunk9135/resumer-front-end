@@ -14,7 +14,8 @@ import {
   Menu,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Bell
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,7 @@ export default function Sidebar() {
     { title: 'Results', icon: <BarChartBig className="h-5 w-5" />, path: '/results' },
     { title: 'History', icon: <History className="h-5 w-5" />, path: '/history' },
     { title: 'Settings', icon: <Settings className="h-5 w-5" />, path: '/settings' },
+    { title: 'Admin Panel', icon: <Bell className="h-5 w-5" />, path: '/admin' }
   ];
   
   const handleLogout = () => logoutMutation.mutate();

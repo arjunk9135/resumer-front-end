@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils'; 
 import { useQuery } from '@tanstack/react-query';
+import { motion } from 'framer-motion';
 import { useParams, useLocation } from 'wouter';
 import {
   Download,
@@ -257,62 +259,96 @@ export default function ResultsPage() {
         {/* Results Header */}
         {/* Results Header */}
         <Card>
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900">{currentAnalysis?.jobTitle || JSON.parse(localStorage?.getItem('data'))?.jobTitle
-                }</h2>
-                <p className="text-gray-500 mt-1 text-sm">
-                  Job ID: {currentAnalysis?.jobId || 'JD-2023-0042'} • {currentAnalysis?.candidateCount || '0'} candidates analyzed
-                </p>
-              </div>
+          <CardContent className="p-6 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900/50 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700">
+  <motion.div 
+    className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3 }}
+  >
+    <div>
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+        {currentAnalysis?.jobTitle || JSON.parse(localStorage?.getItem('data'))?.jobTitle}
+      </h2>
+      <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
+        Job ID: {currentAnalysis?.jobId || 'JD-2023-0042'} • {currentAnalysis?.candidateCount || '0'} candidates analyzed
+      </p>
+    </div>
 
-              <div className="flex items-center gap-4">
-                {/* Status Pill */}
-                <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${currentAnalysis?.status === 'completed'
-                    ? 'bg-green-100 text-green-800'
-                    : currentAnalysis?.status === 'processing'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                  {currentAnalysis?.status === 'completed' ? (
-                    <>
-                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      Completed
-                    </>
-                  ) : currentAnalysis?.status === 'processing' ? (
-                    <>
-                      <svg className="w-4 h-4 mr-1 animate-spin" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-                      </svg>
-                      Processing
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                      Pending
-                    </>
-                  )}
-                </div>
+    <div className="flex items-center gap-4">
+      {/* Enhanced Status Pill */}
+      <motion.div 
+        whileHover={{ scale: 1.03 }}
+        className={cn(
+          "inline-flex items-center px-3 py-1 rounded-full text-sm font-medium shadow-sm",
+          currentAnalysis?.status === 'completed'
+            ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-900/50"
+            : currentAnalysis?.status === 'processing'
+              ? "bg-blue-500/10 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-900/50"
+              : "bg-gray-500/10 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700"
+        )}
+      >
+        {currentAnalysis?.status === 'completed' ? (
+          <>
+            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            Completed
+          </>
+        ) : currentAnalysis?.status === 'processing' ? (
+          <>
+            <svg className="w-4 h-4 mr-1 animate-spin" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+            </svg>
+            Processing
+          </>
+        ) : (
+          <>
+            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            Pending
+          </>
+        )}
+      </motion.div>
 
-                <Select value={sortType} onValueChange={setSortType}>
-                  <SelectTrigger className="w-[180px] bg-white border-gray-300">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="match">Match Score</SelectItem>
-                    <SelectItem value="experience">Experience</SelectItem>
-                    <SelectItem value="education">Education</SelectItem>
-                    <SelectItem value="name">Name</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
+      {/* Enhanced Select */}
+      <Select value={sortType} onValueChange={setSortType}>
+        <motion.div whileHover={{ scale: 1.02 }}>
+          <SelectTrigger className="w-[180px] bg-white/50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm hover:shadow-md transition-all">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+        </motion.div>
+        <SelectContent className="bg-white/90 dark:bg-gray-800 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-lg rounded-lg overflow-hidden">
+          <SelectItem 
+            value="match" 
+            className="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            Match Score
+          </SelectItem>
+          <SelectItem 
+            value="experience"
+            className="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            Experience
+          </SelectItem>
+          <SelectItem 
+            value="education"
+            className="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            Education
+          </SelectItem>
+          <SelectItem 
+            value="name"
+            className="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            Name
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  </motion.div>
+</CardContent>
         </Card>
 
         {/* Analytics Overview */}

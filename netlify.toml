@@ -2,18 +2,14 @@
   command = "npm install --force && npm run build"
   publish = "dist"
 
-[build.environment]
-  NODE_VERSION = "18"
-  NPM_FLAGS = "--legacy-peer-deps --force"
-
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
     Content-Security-Policy = "default-src 'self'; connect-src 'self' https://rayappan.pythonanywhere.com"
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
 
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/api/*"
+  to = "http://13.60.98.6:5001/api/:splat"
   status = 200

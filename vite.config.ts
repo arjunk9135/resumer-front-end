@@ -27,10 +27,10 @@
 //   };
 // });
 
-
 import { defineConfig, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { createHtmlPlugin } from 'vite-plugin-html';
+import { viteStaticCopy } from 'vite-plugin-static-copy'; // Import the plugin
 import path from 'path';
 import fs from 'fs';
 
@@ -71,7 +71,15 @@ export default defineConfig({
         }
       },
       template: 'index.html' // Explicit template path
-    })
+    }),
+    viteStaticCopy({
+  targets: [
+    {
+      src: path.resolve(__dirname, '_redirects'), // Absolute path to the _redirects file
+      dest: '.' // Copy to the root of the dist directory
+    }
+  ]
+})
   ],
   resolve: {
     alias: {

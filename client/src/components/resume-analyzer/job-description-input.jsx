@@ -5,6 +5,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { FormLabel } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import FullScreenLoader from '../ui/Loader2/FullScreenLoader';
+import { BookText } from 'lucide-react';
+
 
 export default function JobDescriptionInput({ field, error }) {
   const apiKey = import.meta.env.VITE_GEN_AI_KEY;
@@ -125,7 +127,10 @@ export default function JobDescriptionInput({ field, error }) {
       {loading && <FullScreenLoader />}
       <div className="space-y-2">
         <div className="flex justify-between items-center">
-          <FormLabel className="text-lg font-semibold text-black-700">Job Description</FormLabel>
+          <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
+                      <BookText className="w-5 h-5 text-purple-500" />
+                      Job Description
+                    </FormLabel>
           <div className="flex gap-2">
             <Button
               type="button"

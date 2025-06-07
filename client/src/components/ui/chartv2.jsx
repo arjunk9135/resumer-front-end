@@ -1,93 +1,58 @@
-// components/results/charts.jsx
-import { Bar, Pie } from 'react-chartjs-2';
-import { 
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-} from 'chart.js';
+import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend, Title } from 'chart.js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Bar, Pie } from 'react-chartjs-2';
 
-// Register required components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-);
+// Register required Chart.js components
+ChartJS.register(BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend, Title);
 
 export default function Chartv2({ candidates, loading }) {
   if (loading || !candidates || candidates.length === 0) {
     return <div className="text-center py-8">Loading chart data...</div>;
   }
 
-  // 1. Horizontal Bar Chart - Category Scores
-  const categoryScores = calculateCategoryScores(candidates);
+  // Process candidates data for charts
   const categoryChartData = {
-    labels: ['Education', 'Experience', 'Skills', 'Languages', 'Soft Skills'],
+    labels: ['Clarity & Structure', 'Relevant Experience', 'Achievements', 'Skills Match', 'Professionalism'],
     datasets: [{
       label: 'Average Score (%)',
-      data: [
-        categoryScores.education,
-        categoryScores.experience,
-        categoryScores.skills,
-        categoryScores.languages,
-        categoryScores.softSkills
-      ],
-      backgroundColor: 'rgba(54, 162, 235, 0.6)',
-      borderColor: 'rgba(54, 162, 235, 1)',
+      data: candidates.map(candidate => candidate.evaluation.overall.score),
+      backgroundColor: 'rgba(99, 102, 241, 0.8)', // Subtle Indigo
+      borderColor: 'rgba(99, 102, 241, 1)',
       borderWidth: 1
     }]
   };
 
-  // 2. Histogram - Score Distribution
-  const scoreDistribution = calculateScoreDistribution(candidates);
   const histogramData = {
-    labels: ['0-20%', '21-40%', '41-60%', '61-80%', '81-100%'],
+    labels: candidates.map(candidate => candidate.name),
     datasets: [{
-      label: 'Number of Candidates',
-      data: [
-        scoreDistribution['0-20'],
-        scoreDistribution['21-40'],
-        scoreDistribution['41-60'],
-        scoreDistribution['61-80'],
-        scoreDistribution['81-100']
-      ],
-      backgroundColor: 'rgba(75, 192, 192, 0.6)',
-      borderColor: 'rgba(75, 192, 192, 1)',
+      label: 'Overall Score',
+      data: candidates.map(candidate => candidate.evaluation.overall.score),
+      backgroundColor: 'rgba(16, 185, 129, 0.8)', // Subtle Emerald
+      borderColor: 'rgba(16, 185, 129, 1)',
       borderWidth: 1
     }]
   };
 
-  // 3. Donut Chart - Experience Breakdown
-  const experienceData = calculateExperienceBreakdown(candidates);
   const donutData = {
     labels: ['0-1 yrs', '1-3 yrs', '3-5 yrs', '5+ yrs'],
     datasets: [{
       data: [
-        experienceData['0-1'],
-        experienceData['1-3'],
-        experienceData['3-5'],
-        experienceData['5+']
+        candidates.filter(candidate => candidate.experience <= 1).length,
+        candidates.filter(candidate => candidate.experience > 1 && candidate.experience <= 3).length,
+        candidates.filter(candidate => candidate.experience > 3 && candidate.experience <= 5).length,
+        candidates.filter(candidate => candidate.experience > 5).length
       ],
       backgroundColor: [
-        'rgba(255, 99, 132, 0.6)',
-        'rgba(54, 162, 235, 0.6)',
-        'rgba(255, 206, 86, 0.6)',
-        'rgba(75, 192, 192, 0.6)'
+        'rgba(99, 102, 241, 0.8)', // Indigo
+        'rgba(16, 185, 129, 0.8)', // Emerald
+        'rgba(234, 179, 8, 0.8)',  // Amber
+        'rgba(239, 68, 68, 0.8)'   // Red
       ],
       borderColor: [
-        'rgba(255, 99, 132, 1)',
-        'rgba(54, 162, 235, 1)',
-        'rgba(255, 206, 86, 1)',
-        'rgba(75, 192, 192, 1)'
+        'rgba(99, 102, 241, 1)',
+        'rgba(16, 185, 129, 1)',
+        'rgba(234, 179, 8, 1)',
+        'rgba(239, 68, 68, 1)'
       ],
       borderWidth: 1
     }]
@@ -96,9 +61,9 @@ export default function Chartv2({ candidates, loading }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
       {/* Horizontal Bar Chart */}
-      <Card>
+      <Card className="bg-white border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
         <CardHeader>
-          <CardTitle>Category Scores Analysis</CardTitle>
+          <CardTitle className="text-gray-800">Category Scores Analysis</CardTitle>
         </CardHeader>
         <CardContent className="h-[300px]">
           <Bar 
@@ -110,10 +75,26 @@ export default function Chartv2({ candidates, loading }) {
               plugins: {
                 title: {
                   display: true,
-                  text: 'Average Scores by Category'
+                  text: 'Average Scores by Category',
+                  color: '#374151', // Gray text for better contrast
+                  font: {
+                    size: 16
+                  }
                 },
                 legend: {
                   display: false
+                }
+              },
+              scales: {
+                x: {
+                  ticks: {
+                    color: '#374151' // Gray ticks
+                  }
+                },
+                y: {
+                  ticks: {
+                    color: '#374151' // Gray ticks
+                  }
                 }
               }
             }}
@@ -122,9 +103,9 @@ export default function Chartv2({ candidates, loading }) {
       </Card>
 
       {/* Histogram */}
-      <Card>
+      <Card className="bg-white border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
         <CardHeader>
-          <CardTitle>Score Distribution</CardTitle>
+          <CardTitle className="text-gray-800">Score Distribution</CardTitle>
         </CardHeader>
         <CardContent className="h-[300px]">
           <Bar 
@@ -135,7 +116,11 @@ export default function Chartv2({ candidates, loading }) {
               plugins: {
                 title: {
                   display: true,
-                  text: 'Candidate Match Score Distribution'
+                  text: 'Candidate Match Score Distribution',
+                  color: '#374151', // Gray text for better contrast
+                  font: {
+                    size: 16
+                  }
                 }
               },
               scales: {
@@ -143,7 +128,16 @@ export default function Chartv2({ candidates, loading }) {
                   beginAtZero: true,
                   title: {
                     display: true,
-                    text: 'Number of Candidates'
+                    text: 'Overall Score',
+                    color: '#374151' // Gray text
+                  },
+                  ticks: {
+                    color: '#374151' // Gray ticks
+                  }
+                },
+                x: {
+                  ticks: {
+                    color: '#374151' // Gray ticks
                   }
                 }
               }
@@ -153,9 +147,9 @@ export default function Chartv2({ candidates, loading }) {
       </Card>
 
       {/* Donut Chart */}
-      <Card>
+      <Card className="bg-white border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
         <CardHeader>
-          <CardTitle>Experience Level Distribution</CardTitle>
+          <CardTitle className="text-gray-800">Experience Level Distribution</CardTitle>
         </CardHeader>
         <CardContent className="h-[300px]">
           <Pie 
@@ -166,10 +160,17 @@ export default function Chartv2({ candidates, loading }) {
               plugins: {
                 title: {
                   display: true,
-                  text: 'Candidate Experience Breakdown'
+                  text: 'Candidate Experience Breakdown',
+                  color: '#374151', // Gray text for better contrast
+                  font: {
+                    size: 16
+                  }
                 },
                 legend: {
-                  position: 'right'
+                  position: 'right',
+                  labels: {
+                    color: '#374151' // Gray text for legend
+                  }
                 }
               },
               cutout: '70%'
@@ -179,96 +180,4 @@ export default function Chartv2({ candidates, loading }) {
       </Card>
     </div>
   );
-}
-
-// Helper functions remain the same...
-// Helper functions
-function calculateCategoryScores(candidates) {
-  const totals = {
-    education: 0,
-    experience: 0,
-    skills: 0,
-    languages: 0,
-    softSkills: 0
-  };
-
-  candidates.forEach(candidate => {
-    totals.education += candidate.evaluation?.education_relevance?.score || 0;
-    totals.experience += candidate.evaluation?.relevant_experience?.score || 0;
-    totals.skills += candidate.evaluation?.skills_match?.score || 0;
-    totals.languages += candidate.evaluation?.language_proficiency?.score || 0;
-    totals.softSkills += candidate.evaluation?.soft_skills?.score || 0;
-  });
-
-  return {
-    education: Math.round((totals.education / candidates.length) * 10),
-    experience: Math.round((totals.experience / candidates.length) * 10),
-    skills: Math.round((totals.skills / candidates.length) * 10),
-    languages: Math.round((totals.languages / candidates.length) * 10),
-    softSkills: Math.round((totals.softSkills / candidates.length) * 10)
-  };
-}
-
-function calculateScoreDistribution(candidates) {
-  const distribution = {
-    '0-20': 0,
-    '21-40': 0,
-    '41-60': 0,
-    '61-80': 0,
-    '81-100': 0
-  };
-
-  candidates.forEach(candidate => {
-    const score = candidate.evaluation?.overall?.score * 10 || 0; // Convert to percentage
-    if (score <= 20) distribution['0-20']++;
-    else if (score <= 40) distribution['21-40']++;
-    else if (score <= 60) distribution['41-60']++;
-    else if (score <= 80) distribution['61-80']++;
-    else distribution['81-100']++;
-  });
-
-  return distribution;
-}
-
-function calculateSkillsCoverage(candidates) {
-  const skillCounts = {};
-  const totalCandidates = candidates.length;
-
-  candidates.forEach(candidate => {
-    if (Array.isArray(candidate.skills)) {
-      candidate.skills.forEach(skill => {
-        skillCounts[skill] = (skillCounts[skill] || 0) + 1;
-      });
-    }
-  });
-
-  // Convert counts to percentages
-  const skillsCoverage = {};
-  Object.keys(skillCounts).forEach(skill => {
-    skillsCoverage[skill] = Math.round((skillCounts[skill] / totalCandidates) * 100);
-  });
-
-  // Sort by most common skills
-  return Object.fromEntries(
-    Object.entries(skillsCoverage).sort((a, b) => b[1] - a[1])
-  );
-}
-
-function calculateExperienceBreakdown(candidates) {
-  const experience = {
-    '0-1': 0,
-    '1-3': 0,
-    '3-5': 0,
-    '5+': 0
-  };
-
-  candidates.forEach(candidate => {
-    const exp = candidate.experience || 0;
-    if (exp <= 1) experience['0-1']++;
-    else if (exp <= 3) experience['1-3']++;
-    else if (exp <= 5) experience['3-5']++;
-    else experience['5+']++;
-  });
-
-  return experience;
 }
