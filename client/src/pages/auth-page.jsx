@@ -1,188 +1,27 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Redirect } from "wouter";
 import { insertUserSchema } from "@shared/schema";
-import { useLocation } from "wouter";
-import { useToast } from '@/hooks/use-toast';
-import Cookies from 'js-cookie';
 
-import {
-  Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  Checkbox,
-  FormMessage,
-  Input,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent
-} from "@/components/ui";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
+import { UserRound, Mail, LockKeyhole } from "lucide-react";
 
-
-import {
-  UserRound,
-  Mail,
-  LockKeyhole,
-  ChevronRight,
-  BriefcaseBusiness,
-  LineChart,
-  Clock
-} from "lucide-react";
-
-
-function ParticleCanvas() {
-  const canvasRef = useRef(null);
-  const animationFrameId = useRef(null);
-  const particles = useRef([]);
-  const mousePos = useRef({ x: null, y: null });
-
-  const PARTICLE_COUNT = 100;
-  const MAX_DISTANCE = 120;
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-
-    let width = canvas.width = canvas.offsetWidth;
-    let height = canvas.height = canvas.offsetHeight;
-
-    // Resize handler
-    function handleResize() {
-      width = canvas.width = canvas.offsetWidth;
-      height = canvas.height = canvas.offsetHeight;
-    }
-    window.addEventListener("resize", handleResize);
-
-    // Initialize particles
-    particles.current = [];
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      particles.current.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        size: Math.random() * 2 + 1,
-        opacity: Math.random() * 0.5 + 0.5,
-      });
-    }
-
-    // Mouse move handler
-    function onMouseMove(e) {
-      const rect = canvas.getBoundingClientRect();
-      mousePos.current.x = e.clientX - rect.left;
-      mousePos.current.y = e.clientY - rect.top;
-    }
-    function onMouseLeave() {
-      mousePos.current.x = null;
-      mousePos.current.y = null;
-    }
-    canvas.addEventListener("mousemove", onMouseMove);
-    canvas.addEventListener("mouseleave", onMouseLeave);
-
-    function animate() {
-      ctx.clearRect(0, 0, width, height);
-
-      // Draw connections
-      for (let i = 0; i < PARTICLE_COUNT; i++) {
-        const p1 = particles.current[i];
-        for (let j = i + 1; j < PARTICLE_COUNT; j++) {
-          const p2 = particles.current[j];
-          const dx = p1.x - p2.x;
-          const dy = p1.y - p2.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          if (dist < MAX_DISTANCE) {
-            const alpha = 0.4 * (1 - dist / MAX_DISTANCE);
-            ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.stroke();
-          }
-        }
-      }
-
-      // Draw and update particles
-      particles.current.forEach(p => {
-        // Move
-        p.x += p.vx;
-        p.y += p.vy;
-
-        // Bounce off edges
-        if (p.x <= 0 || p.x >= width) p.vx *= -1;
-        if (p.y <= 0 || p.y >= height) p.vy *= -1;
-
-        // Mouse repulsion
-        if (mousePos.current.x !== null) {
-          const dx = p.x - mousePos.current.x;
-          const dy = p.y - mousePos.current.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 100) {
-            const force = (100 - dist) / 100;
-            p.vx += (dx / dist) * force * 0.05;
-            p.vy += (dy / dist) * force * 0.05;
-          }
-        }
-
-        // Draw particle with glow
-        const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 4);
-        gradient.addColorStop(0, `rgba(255,255,255,${p.opacity})`);
-        gradient.addColorStop(1, "rgba(255,255,255,0)");
-
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = `rgba(255,255,255,${p.opacity})`;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      animationFrameId.current = requestAnimationFrame(animate);
-    }
-
-    animate();
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      canvas.removeEventListener("mousemove", onMouseMove);
-      canvas.removeEventListener("mouseleave", onMouseLeave);
-      cancelAnimationFrame(animationFrameId.current);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 w-full h-full"
-      style={{ zIndex: 0 }}
-    />
-  );
-}
-
-// Login Schema
+// Login schema
 const loginSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-  // rememberMe: z.boolean().optional(),
+  rememberMe: z.boolean().optional(),
 });
 
-// Register Schema
+// Registration schema extending from the insert user schema from shared schema
 const registerSchema = insertUserSchema.extend({
   confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
   acceptTerms: z.boolean().refine(val => val === true, {
@@ -194,17 +33,22 @@ const registerSchema = insertUserSchema.extend({
 });
 
 export default function AuthPage() {
-  const [location, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("login");
   const { user, loginMutation, registerMutation } = useAuth();
-  const [animationStep, setAnimationStep] = useState(0);
-  const { toast } = useToast();
+  
+  // Login form
+  const loginForm = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+      rememberMe: false,
+    },
+  });
 
-  const baseUrlDev = "http://localhost:5001/api/auth";
-  const baseUrlTest = "http://13.60.98.6:5001/api/auth";
-
-  const loginForm = useForm({ defaultValues: { email: "", password: "" } });
+  // Register form
   const registerForm = useForm({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       username: "",
       password: "",
@@ -215,269 +59,289 @@ export default function AuthPage() {
     },
   });
 
-  useEffect(() => {
-    const timer = setInterval(() => setAnimationStep((prev) => (prev + 1) % 4), 5000);
-    return () => clearInterval(timer);
-  }, []);
-
-  // authApi.js
-
-  const signup = async (userData) => {
-    try {
-      const response = await fetch(`${baseUrlTest}/signup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include", // important for cookies
-        body: JSON.stringify(userData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData?.errors?.[0]?.msg || "Signup failed");
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("❌ Signup error:", error.message);
-      throw error;
-    }
+  // Handle login submission
+  function onLoginSubmit(data) {
+    loginMutation.mutate(data);
   }
 
-  const signin = async (userData) => {
-    try {
-      const response = await fetch(`${baseUrlTest}/signin`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        credentials: "include", // to send/receive cookies
-        body: JSON.stringify(userData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log('Error data:', errorData);
-        throw new Error(errorData?.errors?.[0]?.msg || "Login failed");
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error("❌ Login error:", error.message);
-      throw error;
-    }
+  // Handle registration submission
+  function onRegisterSubmit(data) {
+    const { confirmPassword, acceptTerms, ...userData } = data;
+    registerMutation.mutate(userData);
   }
 
-  async function onLoginSubmit(data) {
-    try {
-      const res = await signin(data);
-      if (res) {
-        toast({
-          title: 'Error',
-          description: 'Login successful. Redirecting...',
-          // variant: 'destructive',
-        });
-        console.log("✅ Login successful:", res);
-        Cookies.set('accessToken', res?.accessToken, {
-          expires: 1, // Expires in 1 day
-          secure: true, // Only send over HTTPS
-          sameSite: 'strict', // Protection against CSRF
-          path: '/', // Accessible across the entire site
-        });
-        navigate("/dashboard");
-      }
-    } catch (err) {
-      console.log('Error in login \n\n\n', err)
-      toast({
-        title: 'Error',
-        description: err.message || 'Something went wrong',
-        variant: 'destructive',
-      });
-      // removed alert
-    }
+  // Redirect if user is already logged in
+  if (false) {
+    return <Redirect to="/" />;
   }
-
-  async function onRegisterSubmit(data) {
-    try {
-      const { confirmPassword, acceptTerms, ...userData } = data;
-      const res = await signup(userData);
-      if (res) {
-        toast.success("Registration complete. Please log in.");
-        console.log("✅ Signup successful:", res);
-      }
-    } catch (err) {
-      toast.error(err.message || "Registration failed. Please try again.");
-      // removed alert
-    }
-  }
-
-
-  if (false) return <Redirect to="/" />;
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-white text-[rgb(3,7,18)]">
-      {/* LEFT PANEL — ULTRA ANIMATED */}
-      <div className="relative hidden md:flex md:w-1/2 bg-[rgb(3,7,18)] text-white overflow-hidden items-center justify-center p-10">
-        <ParticleCanvas />
-
-        {/* TEXT CONTENT */}
-        <div className="relative z-10 max-w-lg text-left space-y-6 animate-fade-up">
-          <div className="flex items-center space-x-3">
-            <div className="bg-white text-[rgb(3,7,18)] p-2 rounded-lg shadow-lg">
-              <BriefcaseBusiness className="h-6 w-6" />
-            </div>
-            <h1 className="text-4xl font-extrabold font-display tracking-tight">Resumer AI</h1>
-          </div>
-
-          <h2 className="text-3xl font-semibold leading-snug font-display">
-            Unlock a Future-Ready Hiring Experience
-          </h2>
-          <p className="text-white/80 text-lg">
-            Make hiring smarter, faster and jaw-droppingly smooth. Let AI handle the heavy lifting while you sip coffee.
+    <div className="min-h-screen flex flex-col md:flex-row bg-background">
+      {/* Hero Section */}
+      <div className="bg-primary hidden md:flex md:w-1/2 flex-col justify-center items-center p-10 text-white">
+        <div className="max-w-md mx-auto">
+          <h1 className="text-4xl font-display font-bold mb-6">TalentInsight</h1>
+          <h2 className="text-2xl font-display font-semibold mb-4">Modern HR recruitment analytics</h2>
+          <p className="mb-8 text-white/90">
+            Streamline your recruitment process with AI-powered resume screening, candidate evaluation, and insightful analytics.
           </p>
-
-          {/* Dynamic Highlights */}
-          <div className="space-y-8">
-            {[
-              {
-                title: "Smart Resume Screening",
-                icon: <UserRound className="h-6 w-6" />,
-                desc: "Analyze 200+ resumes in seconds using smart AI.",
-              },
-              {
-                title: "Powerful Visual Analytics",
-                icon: <LineChart className="h-6 w-6" />,
-                desc: "Gain rich insights into candidate metrics with visuals.",
-              },
-              {
-                title: "Lightning-Fast Workflows",
-                icon: <Clock className="h-6 w-6" />,
-                desc: "Cut resume review time by 75% via automation.",
-              },
-              {
-                title: "Deep AI Insights",
-                icon: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>,
-                desc: "Find hidden gems in seconds with advanced ML models.",
-              },
-            ].map((item, index) => (
-              <div key={index} className={`transition-all duration-700 ${animationStep === index ? "opacity-100" : "opacity-0 absolute"} flex items-start space-x-4`}>
-                <div className="bg-white/20 p-3 rounded-xl shadow-lg">{item.icon}</div>
-                <div>
-                  <h3 className="text-xl font-medium">{item.title}</h3>
-                  <p className="text-white/80">{item.desc}</p>
-                  <Button variant="link" className="text-white mt-2 p-0 group">
-                    Learn more <ChevronRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" />
-                  </Button>
-                </div>
+          
+          <div className="space-y-6">
+            <div className="flex items-start space-x-3">
+              <div className="bg-white/20 p-2 rounded-full">
+                <UserRound className="h-5 w-5" />
               </div>
-            ))}
+              <div>
+                <h3 className="font-medium">Smart Candidate Screening</h3>
+                <p className="text-sm text-white/80">AI-powered analysis of up to 200 resumes at once</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start space-x-3">
+              <div className="bg-white/20 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 3v18h18" />
+                  <path d="M18 17V9" />
+                  <path d="M13 17V5" />
+                  <path d="M8 17v-3" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-medium">Powerful Analytics</h3>
+                <p className="text-sm text-white/80">Visualize candidate data with insightful charts and metrics</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start space-x-3">
+              <div className="bg-white/20 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="font-medium">Save Time</h3>
+                <p className="text-sm text-white/80">Cut resume review time by up to 75% with automated processing</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      {/* RIGHT PANEL — LOGIN/REGISTER */}
-      <div className="flex-1 flex items-center justify-center p-6 md:p-12 bg-white text-[rgb(3,7,18)]">
-        <Card className="w-full max-w-md shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">{activeTab === "login" ? "Login" : "Register"}</CardTitle>
-            <CardDescription>Welcome back to Resumer AI</CardDescription>
+      
+      {/* Form Section */}
+      <div className="flex-1 flex items-center justify-center p-6">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-2xl font-display text-primary md:hidden">TalentInsight</CardTitle>
+            <CardTitle className="text-xl">Welcome</CardTitle>
+            <CardDescription>Sign in to your account or create a new one</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="login" onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-2 mb-6">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="register">Register</TabsTrigger>
-              </TabsList>
-
-              {/* LOGIN FORM */}
-              <TabsContent value="login">
-                <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
-                    <FormField name="email" control={loginForm.control} render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField name="password" control={loginForm.control} render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl><Input type="password" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    {/* <FormField name="rememberMe" control={loginForm.control} render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                        <FormLabel>Remember me</FormLabel>
-                      </FormItem>
-                    )} /> */}
-
-                    <Button type="submit" className="w-full">Login</Button>
-                  </form>
-                </Form>
-              </TabsContent>
-
-              {/* REGISTER FORM */}
-              <TabsContent value="register">
-                <Form {...registerForm}>
-                  <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
-                    <FormField name="fullName" control={registerForm.control} render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Full Name</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField name="email" control={registerForm.control} render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl><Input type="email" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField name="username" control={registerForm.control} render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Username</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField name="password" control={registerForm.control} render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl><Input type="password" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField name="confirmPassword" control={registerForm.control} render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Confirm Password</FormLabel>
-                        <FormControl><Input type="password" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )} />
-
-                    <FormField name="acceptTerms" control={registerForm.control} render={({ field }) => (
-                      <FormItem className="flex items-center space-x-2">
-                        <FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                        <FormLabel>I agree to the terms</FormLabel>
-                      </FormItem>
-                    )} />
-
-                    <Button type="submit" className="w-full">Create Account</Button>
-                  </form>
-                </Form>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
+          
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Log In</TabsTrigger>
+              <TabsTrigger value="register">Register</TabsTrigger>
+            </TabsList>
+            
+            {/* Login Form */}
+            <TabsContent value="login">
+              <Form {...loginForm}>
+                <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-4">
+                  <CardContent className="space-y-4">
+                    <FormField
+                      control={loginForm.control}
+                      name="username"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Username</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <UserRound className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                              <Input className="pl-10" placeholder="Enter your username" {...field} />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={loginForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <LockKeyhole className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                              <Input className="pl-10" type="password" placeholder="Enter your password" {...field} />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="flex items-center justify-between">
+                      <FormField
+                        control={loginForm.control}
+                        name="rememberMe"
+                        render={({ field }) => (
+                          <FormItem className="flex items-center space-x-2">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value}
+                                onCheckedChange={field.onChange}
+                              />
+                            </FormControl>
+                            <FormLabel className="text-sm font-normal">Remember me</FormLabel>
+                          </FormItem>
+                        )}
+                      />
+                      <a href="#" className="text-sm text-primary hover:underline">
+                        Forgot password?
+                      </a>
+                    </div>
+                  </CardContent>
+                  
+                  <CardFooter>
+                    <Button
+                      type="submit"
+                      className="w-full bg-primary"
+                      disabled={loginMutation.isPending}
+                    >
+                      {loginMutation.isPending ? "Signing in..." : "Sign in"}
+                    </Button>
+                  </CardFooter>
+                </form>
+              </Form>
+            </TabsContent>
+            
+            {/* Register Form */}
+            <TabsContent value="register">
+              <Form {...registerForm}>
+                <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                  <CardContent className="space-y-4">
+                    <FormField
+                      control={registerForm.control}
+                      name="fullName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Full Name</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <UserRound className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                              <Input className="pl-10" placeholder="Enter your full name" {...field} />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={registerForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                              <Input className="pl-10" type="email" placeholder="Enter your email" {...field} />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={registerForm.control}
+                      name="username"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Username</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <UserRound className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                              <Input className="pl-10" placeholder="Choose a username" {...field} />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={registerForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <LockKeyhole className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                              <Input className="pl-10" type="password" placeholder="Create a password" {...field} />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={registerForm.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirm Password</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <LockKeyhole className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                              <Input className="pl-10" type="password" placeholder="Confirm your password" {...field} />
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={registerForm.control}
+                      name="acceptTerms"
+                      render={({ field }) => (
+                        <FormItem className="flex items-start space-x-2 mt-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-sm font-normal">
+                              I accept the <a href="#" className="text-primary hover:underline">terms and conditions</a>
+                            </FormLabel>
+                            <FormMessage />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </CardContent>
+                  
+                  <CardFooter>
+                    <Button
+                      type="submit"
+                      className="w-full bg-primary"
+                      disabled={registerMutation.isPending}
+                    >
+                      {registerMutation.isPending ? "Creating account..." : "Create account"}
+                    </Button>
+                  </CardFooter>
+                </form>
+              </Form>
+            </TabsContent>
+          </Tabs>
         </Card>
       </div>
     </div>
