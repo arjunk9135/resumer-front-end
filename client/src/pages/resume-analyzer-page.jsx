@@ -22,6 +22,7 @@ import { useMyContext } from '../hooks/use-context'
 import LoaderOverlay from '../components/ui/loader-overlay';
 import { dummyCandidates } from '../components/ui/dummyData';
 import Loader from '../components/ui/Loader/Loader';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 
 import { User, Briefcase, Building2, MapPin, Star, Globe, BookText, Languages, ChevronDown, ChevronUp, Filter, Settings2 } from 'lucide-react';
 
@@ -155,25 +156,22 @@ export default function ResumeAnalyzerPage() {
       });
       return;
     }
-    setIsLoading(true); 
+    setIsLoading(true);
     try {
       localStorage.setItem('data', JSON.stringify(data));
-      
-      // setAnalysisResults({ candidates: dummyCandidates });
-      // navigate('/results');
 
       const formData = new FormData();
       formData.append('job_description', data?.jobDescription);
       formData.append('resumes_zip_file', uploadedFiles?.[0]);
-        
-      const url = 'https://rayappan.pythonanywhere.com/api/'
+
+      const url = 'https://rayappan.pythonanywhere.com/api/';
       const res = await fetch(`${url}`, {
         method: 'POST',
         body: formData,
         mode: 'cors',
-        credentials: 'omit'
+        credentials: 'omit',
       });
-      
+
       const response = await res.json();
       setAnalysisResults(response);
       if (response) {
@@ -181,7 +179,7 @@ export default function ResumeAnalyzerPage() {
         navigate('/results');
       }
     } catch (e) {
-      console.log(e)
+      console.log(e);
       setAnalysisResults({ candidates: dummyCandidates });
       navigate('/results');
       setIsLoading(false);
@@ -199,130 +197,148 @@ export default function ResumeAnalyzerPage() {
 
       <div className="w-full py-6">
         <div className="mx-auto max-w-6xl bg-gradient-to-br from-white to-gray-50 backdrop-blur-lg shadow-xl rounded-3xl border border-gray-100 p-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800 tracking-tight">Resume Analyzer</h1>
-              <p className="text-gray-500 mt-2">Upload resumes and match them with job descriptions</p>
-            </div>
-            <div className="mt-4 md:mt-0">
-              <Button 
-                variant="outline" 
-                className="flex items-center gap-2 border-gray-300"
-                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              >
-                <Settings2 className="w-4 h-4" />
-                {showAdvancedFilters ? 'Hide' : 'Show'} Filters
-                {showAdvancedFilters ? (
-                  <ChevronUp className="w-4 h-4 ml-1" />
-                ) : (
-                  <ChevronDown className="w-4 h-4 ml-1" />
-                )}
-              </Button>
-            </div>
-          </div>
-
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <div className="grid md:grid-cols-2 gap-6">
-                <StunningInput label="Analysis Name" placeholder="e.g. React Developer" name="name" control={form.control} />
-                <StunningInput label="Job Title" placeholder="e.g. Frontend Developer" name="jobTitle" control={form.control} />
-              </div>
-
-              <StunningInput label="Department (optional)" placeholder="e.g. Engineering" name="department" control={form.control} />
-
-              <FormField
-                control={form.control}
-                name="jobDescription"
-                render={({ field }) => (
-                  <FormItem className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-                    {/* <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
-                      <BookText className="w-5 h-5 text-purple-500" />
-                      Job Description
-                    </FormLabel> */}
-                    <FormControl>
-                      <JobDescriptionInput field={field} onChange={field?.onChange} />
-                    </FormControl>
-                    <FormMessage className="text-xs text-rose-500 mt-1" />
-                  </FormItem>
-                )}
-              />
-
-              <Card className="border border-blue-100 bg-blue-50/50 overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200 px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
-                        <User className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg font-semibold text-gray-800">Resume Upload</CardTitle>
-                        <p className="text-sm text-gray-500">Upload resumes in PDF or ZIP format</p>
-                      </div>
+              <Accordion type="multiple" collapsible defaultValue={['current-form', 'resume-upload']}>
+                {/* Current Form Accordion */}
+                <AccordionItem value="current-form">
+                  <AccordionTrigger>
+                    <div className="flex items-center gap-3 text-xl font-bold text-gray-800">
+                      <User className="w-6 h-6 text-blue-500" />
+                      Basic Info
                     </div>
-                    {uploadedFiles.length > 0 && (
-                      <Badge variant="outline" className="bg-white text-blue-600 border-blue-200">
-                        {uploadedFiles.length} file{uploadedFiles.length > 1 ? 's' : ''} selected
-                      </Badge>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6">
-                  <ResumeDropzone
-                    files={uploadedFiles}
-                    setUploadProgress={setUploadProgress}
-                    setFiles={setUploadedFiles}
-                  />
-                </CardContent>
-              </Card>
-
-              {showAdvancedFilters && (
-                <div className="space-y-6 animate-fade-in">
-                  <h3 className="text-lg font-medium text-gray-800 flex items-center gap-2">
-                    <Filter className="w-5 h-5 text-gray-500" />
-                    Advanced Filters
-                  </h3>
-                  <div className="grid md:grid-cols-3 gap-6">
-                    {['experience', 'location', 'skills', 'education', 'industry', 'languages'].map((key) => (
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-6"> {/* Added vertical spacing */}
+                      <div className="grid md:grid-cols-2 gap-6">
+                        <StunningInput
+                          label="Analysis Name"
+                          placeholder="e.g. React Developer"
+                          name="name"
+                          control={form.control}
+                        />
+                        <StunningInput
+                          label="Job Title"
+                          placeholder="e.g. Frontend Developer"
+                          name="jobTitle"
+                          control={form.control}
+                        />
+                      </div>
                       <StunningInput
-                        key={key}
-                        label={capitalize(key)}
-                        placeholder={`Filter by ${key}`}
-                        name={`filters.${key}`}
+                        label="Department (optional)"
+                        placeholder="e.g. Engineering"
+                        name="department"
                         control={form.control}
                       />
-                    ))}
-                  </div>
-                  <div className="grid md:grid-cols-3 gap-6">
-                    {['prioritySkills', 'priorityExperience', 'priorityEducation'].map((key) => (
                       <FormField
-                        key={key}
                         control={form.control}
-                        name={`filters.${key}`}
+                        name="jobDescription"
                         render={({ field }) => (
-                          <FormItem className="bg-white/90 rounded-xl border border-gray-200 p-4 shadow-sm">
-                            <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
-                              {key.includes('Skills') && <Star className="w-5 h-5 text-emerald-500" />}
-                              {key.includes('Experience') && <Star className="w-5 h-5 text-amber-500" />}
-                              {key.includes('Education') && <BookText className="w-5 h-5 text-purple-500" />}
-                              {key.replace('priority', 'Priority ')}
-                            </FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <SelectTrigger className="rounded-lg border-gray-300">
-                                <SelectValue placeholder="Select priority" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="high">High Priority</SelectItem>
-                                <SelectItem value="regular">Regular Priority</SelectItem>
-                                <SelectItem value="low">Low Priority</SelectItem>
-                              </SelectContent>
-                            </Select>
+                          <FormItem className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+                            <FormControl>
+                              <JobDescriptionInput field={field} onChange={field?.onChange} />
+                            </FormControl>
+                            <FormMessage className="text-xs text-rose-500 mt-1" />
                           </FormItem>
                         )}
                       />
-                    ))}
-                  </div>
-                </div>
-              )}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Advanced Options Accordion */}
+                <AccordionItem value="advanced-options">
+                  <AccordionTrigger>
+                    <div className="flex items-center gap-3 text-xl font-bold text-gray-800">
+                      <Filter className="w-6 h-6 text-green-500" />
+                      Advanced Options
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-6 animate-fade-in">
+                      <div className="grid md:grid-cols-3 gap-6">
+                        {['experience', 'location', 'skills', 'education', 'industry', 'languages'].map((key) => (
+                          <StunningInput
+                            key={key}
+                            label={capitalize(key)}
+                            placeholder={`Filter by ${key}`}
+                            name={`filters.${key}`}
+                            control={form.control}
+                          />
+                        ))}
+                      </div>
+                      <div className="grid md:grid-cols-3 gap-6">
+                        {['prioritySkills', 'priorityExperience', 'priorityEducation'].map((key) => (
+                          <FormField
+                            key={key}
+                            control={form.control}
+                            name={`filters.${key}`}
+                            render={({ field }) => (
+                              <FormItem className="bg-white/90 rounded-xl border border-gray-200 p-4 shadow-sm">
+                                <FormLabel className="text-gray-700 font-medium flex items-center gap-2">
+                                  {key.includes('Skills') && <Star className="w-5 h-5 text-emerald-500" />}
+                                  {key.includes('Experience') && <Star className="w-5 h-5 text-amber-500" />}
+                                  {key.includes('Education') && <BookText className="w-5 h-5 text-purple-500" />}
+                                  {key.replace('priority', 'Priority ')}
+                                </FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <SelectTrigger className="rounded-lg border-gray-300">
+                                    <SelectValue placeholder="Select priority" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="high">High Priority</SelectItem>
+                                    <SelectItem value="regular">Regular Priority</SelectItem>
+                                    <SelectItem value="low">Low Priority</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </FormItem>
+                            )}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+
+                {/* Resume Upload Accordion */}
+                <AccordionItem value="resume-upload">
+                  <AccordionTrigger>
+                    <div className="flex items-center gap-3 text-xl font-bold text-gray-800">
+                      <User className="w-6 h-6 text-indigo-500" />
+                      Resume Upload
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <Card className="border border-blue-100 bg-blue-50/50 overflow-hidden">
+                      <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200 px-6 py-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
+                              <User className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <CardTitle className="text-lg font-semibold text-gray-800">Resume Upload</CardTitle>
+                              <p className="text-sm text-gray-500">Upload resumes in PDF or ZIP format</p>
+                            </div>
+                          </div>
+                          {uploadedFiles.length > 0 && (
+                            <Badge variant="outline" className="bg-white text-blue-600 border-blue-200">
+                              {uploadedFiles.length} file{uploadedFiles.length > 1 ? 's' : ''} selected
+                            </Badge>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-6">
+                        <ResumeDropzone
+                          files={uploadedFiles}
+                          setUploadProgress={setUploadProgress}
+                          setFiles={setUploadedFiles}
+                        />
+                      </CardContent>
+                    </Card>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
 
               <div className="flex justify-end pt-4">
                 <Button

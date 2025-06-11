@@ -167,7 +167,7 @@ export default function JobDescriptionInput({ field, error }) {
           </div>
         </div>
 
-        <div className="relative rounded-xl overflow-hidden shadow-sm border border-indigo-100 bg-gradient-to-br from-white via-indigo-50 to-indigo-100">
+        <div className="relative rounded-xl overflow-hidden shadow-sm border border-gray-100">
           <Textarea
             value={field.value}
             onChange={field.onChange}

@@ -88,8 +88,8 @@ export default function DashboardPage() {
             className="bg-gradient-to-br from-indigo-900/30 to-purple-900/30 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
           >
             <header className="px-8 py-6 border-b border-white/30 flex justify-between items-center">
-              <h2 className="font-display font-bold text-2xl bg-clip-text text-transparent bg-gradient-to-r from-white to-purple-200">
-                Recent Analyses
+               <h2 className="font-display font-bold text-2xl text-white">
+                Recent Analysis
               </h2>
               
             </header>
@@ -108,11 +108,11 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-gradient-to-br from-emerald-900/30 to-teal-900/30 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl overflow-hidden h-full"
+            className="bg-gradient-to-br from-indigo-900/30 to-purple-900/30 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl overflow-hidden h-full"
           >
             <header className="px-8 py-6 border-b border-white/30">
               <h2 className="font-display font-bold text-2xl text-white">
-                Current Actve Analyses
+                Current Active Analyses
               </h2>
             </header>
             <main className="p-6 space-y-4">
