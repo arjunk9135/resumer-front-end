@@ -251,7 +251,7 @@ export default function ResumeAnalyzerPage() {
                   <AccordionTrigger>
                     <div className="flex items-center gap-3 text-xl font-bold text-gray-800">
                       <Filter className="w-6 h-6 text-green-500" />
-                      Advanced Options
+                      Advanced Analysis
                     </div>
                   </AccordionTrigger>
                   <AccordionContent>

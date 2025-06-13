@@ -276,7 +276,6 @@ export default function ResultsPage() {
     </div>
 
     <div className="flex items-center gap-4">
-      {/* Enhanced Status Pill */}
       <motion.div 
         whileHover={{ scale: 1.03 }}
         className={cn(
@@ -312,8 +311,8 @@ export default function ResultsPage() {
         )}
       </motion.div>
 
-      {/* Enhanced Select */}
-      <Select value={sortType} onValueChange={setSortType}>
+     
+      {/* <Select value={sortType} onValueChange={setSortType}>
         <motion.div whileHover={{ scale: 1.02 }}>
           <SelectTrigger className="w-[180px] bg-white/50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm hover:shadow-md transition-all">
             <SelectValue placeholder="Sort by" />
@@ -345,7 +344,7 @@ export default function ResultsPage() {
             Name
           </SelectItem>
         </SelectContent>
-      </Select>
+      </Select> */}
     </div>
   </motion.div>
 </CardContent>

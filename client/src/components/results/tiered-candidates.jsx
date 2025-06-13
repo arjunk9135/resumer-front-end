@@ -59,20 +59,20 @@ export default function TieredCandidates({ candidates }) {
     exceptional: {
       label: 'Exceptional Matches',
       description: 'These candidates closely match the job requirements',
-      icon: Star,
-      iconBg: 'bg-indigo-500',
+      icon: Trophy, // Swapped icon
+      iconBg: 'bg-green-500', // Swapped color
       iconText: 'text-white',
-      bgColor: 'bg-indigo-500/10',
-      textColor: 'text-indigo-700',
+      bgColor: 'bg-green-500/10', // Swapped color
+      textColor: 'text-green-700', // Swapped color
     },
     strong: {
       label: 'Strong Matches',
       description: 'These candidates match most of the job requirements',
-      icon: Trophy,
-      iconBg: 'bg-green-500',
+      icon: Star, // Swapped icon
+      iconBg: 'bg-indigo-500', // Swapped color
       iconText: 'text-white',
-      bgColor: 'bg-green-500/10',
-      textColor: 'text-green-700',
+      bgColor: 'bg-indigo-500/10', // Swapped color
+      textColor: 'text-indigo-700', // Swapped color
     },
     qualified: {
       label: 'Qualified Candidates',
@@ -192,11 +192,11 @@ export default function TieredCandidates({ candidates }) {
         <div className="flex flex-wrap items-center gap-4 mb-4 pb-4 border-b">
           <span className="text-sm font-medium">Score Tiers:</span>
           <div className="flex items-center text-xs text-indigo-700">
-            <span className="w-3 h-3 rounded-full bg-indigo-500 mr-1"></span>
+            <span className="w-3 h-3 rounded-full bg-green-500 mr-1"></span>
             90-100% Exceptional
           </div>
           <div className="flex items-center text-xs text-green-700">
-            <span className="w-3 h-3 rounded-full bg-green-500 mr-1"></span>
+            <span className="w-3 h-3 rounded-full bg-indigo-500  mr-1"></span>
             80-89% Strong
           </div>
           <div className="flex items-center text-xs text-purple-700">
