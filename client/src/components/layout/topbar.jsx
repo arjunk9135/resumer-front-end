@@ -3,6 +3,8 @@ import { useAuth } from '@/hooks/use-auth';
 import { Bell } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { SignOutButton, UserButton } from '@clerk/clerk-react'
+
 
 import {
   DropdownMenu,
@@ -106,7 +108,7 @@ export default function Topbar() {
           </div>
 
           {/* User profile */}
-          <DropdownMenu>
+          {/* <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="rounded-full h-9 w-9 p-0 ring-2 ring-white/20 hover:ring-green-400 transition">
                 <Avatar>
@@ -131,7 +133,8 @@ export default function Topbar() {
               <DropdownMenuSeparator />
               <DropdownMenuItem>Sign out</DropdownMenuItem>
             </DropdownMenuContent>
-          </DropdownMenu>
+          </DropdownMenu> */}
+          <UserButton />
         </div>
       </div>
     </header>

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
+import { SignOutButton } from '@clerk/clerk-react'
+
 
 import {
   LayoutDashboard,
@@ -125,14 +127,7 @@ const renderNavItems = () =>
           </nav>
         </ScrollArea>
         <div className="p-4 border-t border-gray-800">
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start text-gray-400 hover:bg-gray-800 hover:text-white" 
-            onClick={handleLogout}
-          >
-            <LogOut className="mr-3 h-5 w-5" />
-            <span>Sign Out</span>
-          </Button>
+          <SignOutButton redirectUrl="/login"></SignOutButton>
         </div>
       </div>
     </div>
@@ -170,6 +165,8 @@ const renderNavItems = () =>
           </nav>
         </ScrollArea>
         <div className="p-4 border-t border-gray-800">
+          
+          <SignOutButton redirectUrl="/login">
           <Button 
             variant="ghost" 
             className={cn(
@@ -184,6 +181,7 @@ const renderNavItems = () =>
               <span>{logoutMutation.isPending ? "Signing out..." : "Sign Out"}</span>
             )}
           </Button>
+          </SignOutButton>
         </div>
       </div>
     </>

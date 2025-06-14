@@ -7,6 +7,7 @@ import { insertUserSchema } from "@shared/schema";
 import { useLocation } from "wouter";
 import { useToast } from '@/hooks/use-toast';
 import Cookies from 'js-cookie';
+import SignUpPage from "../components/auth/sign-up";
 import { FcGoogle } from "react-icons/fc"; // Import Google icon from react-icons
 
 import {
@@ -41,6 +42,9 @@ import {
   LineChart,
   Clock
 } from "lucide-react";
+import SignInPage from "../components/auth/sign-in";
+
+import { SignIn, SignUp, useClerk } from "@clerk/clerk-react";
 
 
 function ParticleCanvas() {
@@ -200,6 +204,8 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [animationStep, setAnimationStep] = useState(0);
   const { toast } = useToast();
+  const clerk = useClerk(); // Access Clerk instance
+  const [verificationStatus, setVerificationStatus] = useState("loading");
 
   const baseUrlDev = "http://localhost:5001/api/auth";
   // const baseUrlTest = "http://13.60.98.6:5001/api/auth";
@@ -221,6 +227,24 @@ export default function AuthPage() {
     const timer = setInterval(() => setAnimationStep((prev) => (prev + 1) % 4), 5000);
     return () => clearInterval(timer);
   }, []);
+
+  useEffect(() => {
+    if (location === "/verify-email") {
+      async function verifyEmail() {
+        try {
+          await clerk.handleEmailLinkVerification({
+            redirectUrl: "/dashboard",
+            redirectUrlComplete: "/dashboard",
+          });
+          setVerificationStatus("success");
+        } catch (error) {
+          console.error("Email verification failed:", error);
+          setVerificationStatus("error");
+        }
+      }
+      verifyEmail();
+    }
+  }, [location, clerk]);
 
   // authApi.js
 
@@ -341,222 +365,20 @@ export default function AuthPage() {
 
       {/* RIGHT PANEL */}
       <div className="flex-1 flex items-center justify-center p-6 md:p-12 bg-white text-[rgb(3,7,18)]">
-        <Card className="w-full max-w-md shadow-xl rounded-3xl">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">
-              {activeTab === "login" ? "Login" : "Register"}
-            </CardTitle>
-            <CardDescription>
-              {activeTab === "login"
-                ? "Welcome back to Resumer AI"
-                : "Create an account to get started"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid grid-cols-2 mb-6">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="register">Register</TabsTrigger>
-              </TabsList>
+        <div className="w-full max-w-md">
+          {location === "/login" && (
+            <SignIn signInUrl="/login"
+    fallbackRedirectUrl="/dashboard"  
+  />
+          )}
 
-              {/* LOGIN FORM */}
-              <TabsContent value="login">
-                <Form {...loginForm}>
-                  <form
-                    onSubmit={loginForm.handleSubmit(onLoginSubmit)}
-                    className="space-y-4"
-                  >
-                    <FormField
-                      name="email"
-                      control={loginForm.control}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              {...field}
-                              className="rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      name="password"
-                      control={loginForm.control}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              {...field}
-                              className="rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button
-                      type="submit"
-                      className="w-full py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg transform transition-all duration-300 hover:scale-105"
-                    >
-                      Login
-                    </Button>
-                    <div className="flex items-center my-4">
-                      <div className="flex-grow border-t border-gray-300"></div>
-                      <span className="mx-4 text-sm text-gray-500">
-                        Or sign in with below methods
-                      </span>
-                      <div className="flex-grow border-t border-gray-300"></div>
-                    </div>
-                    <div className="flex justify-center">
-                      <button
-                        type="button"
-                        className="flex items-center justify-center w-12 h-12 rounded-full border border-gray-300 hover:border-indigo-500 shadow-md transition-all duration-300 hover:scale-105"
-                      >
-                        <FcGoogle className="h-6 w-6" />
-                      </button>
-                    </div>
-                  </form>
-                </Form>
-              </TabsContent>
+          {location === "/signup" && (
+  <SignUp 
+    fallbackRedirectUrl="/dashboard" 
+  />
+)}
 
-              {/* REGISTER FORM */}
-              <TabsContent value="register">
-                <Form {...registerForm}>
-                  <form
-                    onSubmit={registerForm.handleSubmit(onRegisterSubmit)}
-                    className="space-y-4"
-                  >
-                    <FormField
-                      name="fullName"
-                      control={registerForm.control}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Full Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              className="rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      name="email"
-                      control={registerForm.control}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              {...field}
-                              className="rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      name="username"
-                      control={registerForm.control}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Username</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              className="rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      name="password"
-                      control={registerForm.control}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              {...field}
-                              className="rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      name="confirmPassword"
-                      control={registerForm.control}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Confirm Password</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="password"
-                              {...field}
-                              className="rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      name="acceptTerms"
-                      control={registerForm.control}
-                      render={({ field }) => (
-                        <FormItem className="flex items-center space-x-2">
-                          <FormControl>
-                            <Checkbox
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
-                            />
-                          </FormControl>
-                          <FormLabel>I agree to the terms</FormLabel>
-                        </FormItem>
-                      )}
-                    />
-                    <Button
-                      type="submit"
-                      className="w-full py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg transform transition-all duration-300 hover:scale-105"
-                    >
-                      Create Account
-                    </Button>
-                    <div className="flex items-center my-4">
-                      <div className="flex-grow border-t border-gray-300"></div>
-                      <span className="mx-4 text-sm text-gray-500">
-                        Or sign in with below methods
-                      </span>
-                      <div className="flex-grow border-t border-gray-300"></div>
-                    </div>
-                    <div className="flex justify-center">
-                      <button
-                        type="button"
-                        className="flex items-center justify-center w-12 h-12 rounded-full border border-gray-300 hover:border-indigo-500 shadow-md transition-all duration-300 hover:scale-105"
-                      >
-                        <FcGoogle className="h-6 w-6" />
-                      </button>
-                    </div>
-                  </form>
-                </Form>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
+        </div>
       </div>
     </div>
   );
