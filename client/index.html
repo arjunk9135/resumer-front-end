@@ -1,21 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <meta charset="UTF-8" />
     <meta http-equiv="Content-Security-Policy" content="
-      default-src 'self'; 
-      style-src 'self' 'unsafe-inline'; 
-      img-src 'self' https://images.unsplash.com https://img.clerk.com data:; 
-      connect-src 'self' https://rayappan.pythonanywhere.com https://openrouter.ai http://13.60.98.6:5001 http://localhost:5002 https://complete-gator-75.clerk.accounts.dev; 
-      script-src 'self' https://replit.com https://js.clerk.dev https://complete-gator-75.clerk.accounts.dev https://challenges.cloudflare.com; 
-      font-src 'self' https://fonts.cdnfonts.com data:; 
-      worker-src 'self' blob:; 
-      frame-src 'self' https://challenges.cloudflare.com;">
+      default-src 'self';
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' https://images.unsplash.com https://img.clerk.com data:;
+      connect-src 'self' https://rayappan.pythonanywhere.com https://openrouter.ai http://13.60.98.6:5001 http://localhost:5002 https://complete-gator-75.clerk.accounts.dev https://api.clerk.dev https://*.clerk.dev;
+      script-src 'self' https://replit.com https://js.clerk.dev https://complete-gator-75.clerk.accounts.dev https://challenges.cloudflare.com https://*.clerk.dev https://*.clerk.com;
+      font-src 'self' https://fonts.cdnfonts.com data:;
+      worker-src 'self' blob:;
+      frame-src 'self' https://challenges.cloudflare.com https://*.clerk.dev https://*.clerk.com;
+    ">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>Resumer AI</title>
+
+    <!-- ✅ Optional: Prevent favicon 404 -->
+    <link rel="icon" href="data:," />
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Your React App Entry Point -->
     <script type="module" src="/src/main.tsx"></script>
-    <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
+
+    <!-- Replit Banner Script (for dev only) -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
   </body>
 </html>

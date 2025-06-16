@@ -1,15 +1,24 @@
 [build]
-  command = "npm install --force && npm run build"
+  command = "npm install --legacy-peer-deps --ignore-engines && npm run build"
   publish = "dist"
 
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; connect-src 'self' https://rayappan.pythonanywhere.com"
+    Content-Security-Policy = '''
+      default-src 'self';
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' https://images.unsplash.com https://img.clerk.com data:;
+      connect-src 'self' https://rayappan.pythonanywhere.com https://openrouter.ai http://13.60.98.6:5001 http://localhost:5002 https://complete-gator-75.clerk.accounts.dev https://api.clerk.dev https://*.clerk.dev;
+      script-src 'self' https://replit.com https://js.clerk.dev https://complete-gator-75.clerk.accounts.dev https://challenges.cloudflare.com https://*.clerk.dev https://*.clerk.com;
+      font-src 'self' https://fonts.cdnfonts.com data:;
+      worker-src 'self' blob:;
+      frame-src 'self' https://challenges.cloudflare.com https://*.clerk.dev https://*.clerk.com;
+    '''
     X-Content-Type-Options = "nosniff"
     X-Frame-Options = "DENY"
 
 [[redirects]]
-  from = "/api/*"
-  to = "http://13.60.98.6:5001/api/:splat"
+  from = "/*"
+  to = "/index.html"
   status = 200
