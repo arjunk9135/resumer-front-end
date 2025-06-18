@@ -1,277 +1,207 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Link } from 'wouter';
-import { Search, Filter, User } from 'lucide-react';
+import React, { useState } from "react";
+import PageContainer from "@/components/layout/page-container";
+import ResultsSection from "../components/results/results-section";
 
-import PageContainer from '@/components/layout/page-container';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { formatDistanceToNow } from 'date-fns';
+const statusStyles = {
+  "in progress": "bg-yellow-100 text-yellow-800",
+  "failed": "bg-red-100 text-red-800",
+  "complete": "bg-green-100 text-green-800",
+  "initiated": "bg-blue-100 text-blue-800",
+};
 
-export default function HistoryPage() {
-  // State for filters
-  const [dateRange, setDateRange] = useState('all-time');
-  const [department, setDepartment] = useState('all');
-  const [status, setStatus] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  // Fetch analyses
-  const { data: analyses = [] } = useQuery({
-    queryKey: ['/api/analyses'],
+const historyData = [
+  {
+    id: 1,
+    analysisName: "Resume Analysis",
+    jobTitle: "Software Engineer",
+    analysisId: "A123",
+    status: "complete",
+    date: "2024-06-01",
+    user: "Arjun K",
+    duration: "2m 30s",
+    score: 92,
+  },
+  {
+    id: 2,
+    analysisName: "Job Fit Analysis",
+    jobTitle: "Data Scientist",
+    analysisId: "B456",
+    status: "in progress",
+    date: "2024-06-02",
+    user: "Priya S",
+    duration: "1m 10s",
+    score: 78,
+  },
+  {
+    id: 3,
+    analysisName: "Skill Match Analysis",
+    jobTitle: "Product Manager",
+    analysisId: "C789",
+    status: "failed",
+    date: "2024-06-03",
+    user: "Rahul M",
+    duration: "0m 45s",
+    score: 0,
+  },
+  {
+    id: 4,
+    analysisName: "Initial Screening",
+    jobTitle: "QA Engineer",
+    analysisId: "D012",
+    status: "initiated",
+    date: "2024-06-04",
+    user: "Sneha T",
+    duration: "-",
+    score: null,
+  },
+];
+
+const filterOptions = [
+  { value: "all", label: "All" },
+  { value: "complete", label: "Complete" },
+  { value: "in progress", label: "In Progress" },
+  { value: "failed", label: "Failed" },
+  { value: "initiated", label: "Initiated" },
+];
+
+const HistoryPage = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedHistory, setSelectedHistory] = useState(null);
+
+  const filteredHistory = historyData.filter((row) => {
+    const matchesSearch =
+      row.analysisName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      row.jobTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      row.analysisId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      row.user.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || row.status === statusFilter;
+    return matchesSearch && matchesStatus;
   });
-  
-  // Filter analyses based on selected filters
-  const filteredAnalyses = analyses.filter(analysis => {
-    // Search filter
-    if (searchQuery && !analysis.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
-        !analysis.jobTitle.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
-    }
-    
-    // Status filter
-    if (status !== 'all' && analysis.status !== status) {
-      return false;
-    }
-    
-    // Department filter
-    if (department !== 'all' && analysis.department !== department) {
-      return false;
-    }
-    
-    // Date range filter (simplified for demo)
-    if (dateRange !== 'all-time') {
-      const analysisDate = new Date(analysis.createdAt);
-      const now = new Date();
-      
-      if (dateRange === 'last-7' && (now - analysisDate) > 7 * 24 * 60 * 60 * 1000) {
-        return false;
-      } else if (dateRange === 'last-30' && (now - analysisDate) > 30 * 24 * 60 * 60 * 1000) {
-        return false;
-      } else if (dateRange === 'last-90' && (now - analysisDate) > 90 * 24 * 60 * 60 * 1000) {
-        return false;
-      }
-    }
-    
-    return true;
-  });
-  
-  // Sort analyses by date (newest first)
-  const sortedAnalyses = [...filteredAnalyses].sort((a, b) => 
-    new Date(b.createdAt) - new Date(a.createdAt)
-  );
-  
+
+  if (selectedHistory) {
+    return (
+      <PageContainer>
+        <button
+          className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg hover:bg-blue-200 transition-colors mb-4"
+          onClick={() => setSelectedHistory(null)}
+        >
+          ← Back to History
+        </button>
+        {/* Pass the selected history's id as a param if needed */}
+        <ResultsSection result={selectedHistory} />
+      </PageContainer>
+    );
+  }
+
   return (
-    <PageContainer title="Analysis History">
-      <div className="space-y-6">
-        {/* Search and Filter Row */}
-        <div className="flex flex-col sm:flex-row justify-between gap-4">
-          <div className="relative flex-grow">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
+    <PageContainer>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+        <h1 className="text-3xl font-bold text-left mb-4 sm:mb-0 text-blue-900">History</h1>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center">
+          <div className="flex items-center bg-white/60 backdrop-blur-md border border-blue-100 rounded-lg px-2 py-1 shadow">
+            <svg className="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35"/>
+            </svg>
+            <input
+              type="text"
               placeholder="Search history..."
-              className="pl-9"
+              className="bg-transparent outline-none px-2 py-1 text-blue-900 placeholder-blue-400"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <Button variant="outline">
-            <Filter className="h-4 w-4 mr-2" />
-            Filter
-          </Button>
-        </div>
-        
-        {/* History Filters */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4">
-              <div className="flex-1">
-                <label htmlFor="date-range" className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
-                <Select value={dateRange} onValueChange={setDateRange}>
-                  <SelectTrigger id="date-range">
-                    <SelectValue placeholder="All Time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all-time">All Time</SelectItem>
-                    <SelectItem value="last-7">Last 7 days</SelectItem>
-                    <SelectItem value="last-30">Last 30 days</SelectItem>
-                    <SelectItem value="last-90">Last 90 days</SelectItem>
-                    <SelectItem value="custom">Custom Range</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex-1">
-                <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                <Select value={department} onValueChange={setDepartment}>
-                  <SelectTrigger id="department">
-                    <SelectValue placeholder="All Departments" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Departments</SelectItem>
-                    <SelectItem value="Engineering">Engineering</SelectItem>
-                    <SelectItem value="Marketing">Marketing</SelectItem>
-                    <SelectItem value="Product">Product</SelectItem>
-                    <SelectItem value="HR">HR</SelectItem>
-                    <SelectItem value="Sales">Sales</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex-1">
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <Select value={status} onValueChange={setStatus}>
-                  <SelectTrigger id="status">
-                    <SelectValue placeholder="All Statuses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="processing">Processing</SelectItem>
-                    <SelectItem value="queued">Queued</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-end">
-                <Button 
-                  className="h-10"
-                  onClick={() => {
-                    setDateRange('all-time');
-                    setDepartment('all');
-                    setStatus('all');
-                    setSearchQuery('');
-                  }}
-                >
-                  Apply
-                </Button>
-              </div>
+          <div className="relative">
+            <select
+              className="appearance-none bg-white/60 backdrop-blur-md border border-blue-100 rounded-lg px-4 py-2 pr-8 text-blue-900 shadow focus:ring-2 focus:ring-blue-200"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              {filterOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-400">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
             </div>
-          </CardContent>
-        </Card>
-        
-        {/* History Table */}
-        <Card>
-          <CardHeader className="px-6 py-5 border-b border-gray-100">
-            <CardTitle className="font-display font-semibold text-lg text-text">
-              All Analyses
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {filteredAnalyses.length === 0 ? (
-              <div className="py-8 text-center">
-                <p className="text-gray-500 mb-4">No analyses found matching your filters</p>
-                <Button onClick={() => {
-                  setDateRange('all-time');
-                  setDepartment('all');
-                  setStatus('all');
-                  setSearchQuery('');
-                }}>
-                  Clear Filters
-                </Button>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Analysis Name</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Candidates</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {sortedAnalyses.map(analysis => (
-                      <tr key={analysis.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-text">{analysis.jobTitle}</div>
-                          <div className="text-xs text-gray-500">
-                            {analysis.averageScore ? `Match Score: ${analysis.averageScore}%` : ''}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{analysis.department || 'Not specified'}</div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{analysis.candidateCount}</div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="User" />
-                              <AvatarFallback><User className="h-4 w-4" /></AvatarFallback>
-                            </Avatar>
-                            <div className="ml-3">
-                              <div className="text-sm text-gray-900">Alex Johnson</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">
-                            {formatDistanceToNow(new Date(analysis.createdAt), { addSuffix: true })}
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <Badge variant={getStatusVariant(analysis.status)}>
-                            {getStatusLabel(analysis.status)}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                          <Link href={`/results/${analysis.id}`}>
-                            <Button variant="link" className="text-primary">View</Button>
-                          </Link>
-                          <Button variant="link" className="text-gray-500">Export</Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-            
-            {filteredAnalyses.length > 0 && (
-              <div className="px-6 py-4 border-t border-gray-200">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-500">
-                    Showing <span className="font-medium">1</span> to <span className="font-medium">{filteredAnalyses.length}</span> of <span className="font-medium">{analyses.length}</span> analyses
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm" disabled>Previous</Button>
-                    <Button variant="outline" size="sm" className="bg-primary text-white">1</Button>
-                    <Button variant="outline" size="sm" disabled>Next</Button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      </div>
+      <div className="overflow-x-auto">
+        <div
+          className="rounded-2xl bg-gradient-to-br from-blue-50/70 via-white/60 to-purple-100/70 border border-blue-100 shadow-xl backdrop-blur-lg"
+          style={{
+            boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.10)",
+            border: "1px solid rgba(173, 216, 230, 0.25)",
+          }}
+        >
+          <table className="min-w-full divide-y divide-blue-100">
+            <thead>
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">Analysis</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">Job Title</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">Analysis ID</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">User</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">Duration</th>
+                <th className="px-6 py-4 text-left text-xs font-semibold text-blue-900 uppercase tracking-wider">Score</th>
+                <th className="px-6 py-4"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredHistory.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="px-6 py-8 text-center text-blue-400">No history found.</td>
+                </tr>
+              ) : (
+                filteredHistory.map((row) => (
+                  <tr
+                    key={row.id}
+                    className="hover:bg-blue-50/40 transition cursor-pointer"
+                    onClick={() => setSelectedHistory(row)}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-blue-900 font-medium">{row.analysisName}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-blue-800">{row.jobTitle}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-blue-500">{row.analysisId}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold shadow ${statusStyles[row.status] || "bg-gray-200 text-gray-700"}`}>
+                        {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-blue-700">{row.date}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-blue-700">{row.user}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-blue-700">{row.duration}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-blue-700">{row.score !== null ? row.score : "-"}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <button
+                        className="text-blue-600 hover:text-blue-900 transition"
+                        onClick={e => {
+                          e.stopPropagation();
+                          setSelectedHistory(row);
+                        }}
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/>
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </PageContainer>
   );
-}
+};
 
-// Helper functions
-function getStatusVariant(status) {
-  switch(status) {
-    case 'completed': return 'success';
-    case 'processing': return 'default';
-    case 'queued': return 'secondary';
-    case 'failed': return 'destructive';
-    default: return 'outline';
-  }
-}
-
-function getStatusLabel(status) {
-  switch(status) {
-    case 'completed': return 'Completed';
-    case 'processing': return 'Processing';
-    case 'queued': return 'Queued';
-    case 'failed': return 'Failed';
-    default: return status;
-  }
-}
+export default HistoryPage;

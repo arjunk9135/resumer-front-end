@@ -17,11 +17,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
-import { dummyData } from '../lib/dummy';
-import { useMyContext } from '../hooks/use-context'
-import LoaderOverlay from '../components/ui/loader-overlay';
-import { dummyCandidates } from '../components/ui/dummyData';
-import Loader from '../components/ui/Loader/Loader';
+import { useMyContext } from '../../hooks/use-context';
+// import { dummyCandidates } from '../../data/dummy-candidates';
+import Loader from '../ui/Loader/Loader';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 
 import { User, Briefcase, Building2, MapPin, Star, Globe, BookText, Languages, Filter } from 'lucide-react';
@@ -83,7 +81,7 @@ const analysisFormSchema = z.object({
   }).optional(),
 });
 
-export default function ResumeAnalyzerPage() {
+export default function ResumeAnalyzerSection() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [location, navigate] = useLocation();
@@ -180,7 +178,7 @@ export default function ResumeAnalyzerPage() {
       }
     } catch (e) {
       console.log(e);
-      setAnalysisResults({ candidates: dummyCandidates });
+    //   setAnalysisResults({ candidates: dummyCandidates });
       navigate('/results');
       setIsLoading(false);
     }
@@ -192,8 +190,8 @@ export default function ResumeAnalyzerPage() {
   }
 
   return (
-    <PageContainer>
-      {isLoading && <Loader />}
+    <>
+    {isLoading && <Loader />}
 
       <div className="w-full py-6">
         <div className="mx-auto max-w-7xl bg-gradient-to-br from-blue-50/80 via-white/80 to-purple-100/80 backdrop-blur-xl shadow-2xl rounded-3xl border border-blue-100 p-8">
@@ -351,7 +349,7 @@ export default function ResumeAnalyzerPage() {
             </form>
           </Form>
         </div>
-      </div>
-    </PageContainer>
+      </div></>
+      
   );
 }

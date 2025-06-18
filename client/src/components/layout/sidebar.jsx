@@ -37,12 +37,12 @@ export default function Sidebar() {
   
   const navItems = [
     { title: 'Dashboard', icon: <LayoutDashboard className="h-5 w-5" />, path: '/dashboard' },
-    { title: 'Resume Analyzer', icon: <FileSearch className="h-5 w-5" />, path: '/resume-analyzer' },
+    // { title: 'Resume Analyzer', icon: <FileSearch className="h-5 w-5" />, path: '/resume-analyzer' },
     // { title: 'Analysis Queue', icon: <Clock className="h-5 w-5" />, path: '/analysis-queue' },
-    { title: 'Results', icon: <BarChartBig className="h-5 w-5" />, path: '/results' },
+    { title: 'Resumer Analyzer', icon: <BarChartBig className="h-5 w-5" />, path: '/results' },
     { title: 'History', icon: <History className="h-5 w-5" />, path: '/history' },
-    { title: 'Settings', icon: <Settings className="h-5 w-5" />, path: '/settings' },
-    { title: 'Admin Panel', icon: <Bell className="h-5 w-5" />, path: '/admin' }
+    // { title: 'Settings', icon: <Settings className="h-5 w-5" />, path: '/settings' },
+    // { title: 'Admin Panel', icon: <Bell className="h-5 w-5" />, path: '/admin' }
   ];
   
   const handleLogout = () => logoutMutation.mutate();
