@@ -42,7 +42,6 @@ export default function DashboardPage() {
     { id: 1, name: "Alex Johnson", score: "98%", skills: ["React", "Node.js", "TypeScript"] },
     { id: 2, name: "Sarah Williams", score: "95%", skills: ["Python", "ML", "Data Analysis"] },
     { id: 3, name: "Michael Chen", score: "93%", skills: ["Java", "Spring", "Microservices"] },
-    { id: 4, name: "Emma Davis", score: "91%", skills: ["UX Design", "Figma", "User Research"] },
   ];
 
   return (
@@ -50,7 +49,7 @@ export default function DashboardPage() {
       {/* Main Content Area - 80/20 Split */}
       <div className="flex flex-col lg:flex-row gap-6 w-full">
         {/* Left Side (80%) */}
-        <div className="w-full lg:w-3/5 space-y-6">
+        <div className="w-full lg:w-3/5 space-y-12">
           {/* Chart at the top */}
           <div className="w-full">
             <SummaryGraph/>
@@ -106,7 +105,7 @@ export default function DashboardPage() {
             transition={{ delay: 0.4 }}
             className="h-full bg-white border border-[#E1E5F2] rounded-3xl shadow-sm overflow-hidden"
           >
-            <header className="px-6 py-5 border-b border-[#E1E5F2] flex items-center gap-3 ">
+            <header className="px-6 py-5 border-none border-[#E1E5F2] flex items-center gap-3 ">
               <Award className="h-5 w-5 text-white" />
               <h2 className="font-display font-bold text-2xl text-black">Top Candidates</h2>
             </header>
@@ -158,9 +157,9 @@ export default function DashboardPage() {
               ))}
             </main>
 
-            <footer className="p-4 border-t border-[#E1E5F2]">
+            <footer className="p-4 border-none border-[#E1E5F2]">
               <Button variant="outline" className="w-full gap-2 text-[#5B6CFF] hover:bg-[#F4F7FE] hover:text-[#2F49D1] border-[#E1E5F2]">
-                <UserCheck className="h-4 w-4" />
+                <UserCheck className="h-3 w-4" />
                 View All Candidates
               </Button>
             </footer>

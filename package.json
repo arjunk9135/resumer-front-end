@@ -7,7 +7,6 @@
     "dev": "vite",
     "build": "vite build",
     "vercel-build": "vite build",
-    "preinstall": "npm install -g vite",
     "postinstall": "vite --version",
     "preview": "vite preview",
     "start": "vite preview --port 5000",
@@ -20,6 +19,7 @@
     "node": ">=18"
   },
   "dependencies": {
+    "@clerk/clerk-js": "^5.69.0",
     "@clerk/clerk-react": "^5.31.9",
     "@clerk/react-router": "^1.6.0",
     "@hookform/resolvers": "^3.10.0",

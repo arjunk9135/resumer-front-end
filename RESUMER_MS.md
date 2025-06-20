@@ -104,3 +104,7 @@ GET http://127.0.0.1:8000/batches/<batch_uuid>/
 | `/batches/`            | POST   | Create a new batch with job details      |
 | `/batches/{batch_id}/` | GET    | Get batch status and details             |
 | `/batches/upload/`     | POST   | Upload resumes zip file to a batch       |
+
+
+
+"preinstall": "npm install -g vite",

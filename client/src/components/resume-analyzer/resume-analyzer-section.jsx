@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState , useEffect} from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -17,6 +17,10 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "..
 import { User, Briefcase, Building2, MapPin, Star, Globe, BookText, Languages, Filter } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { dummyCandidates } from "../ui/dummyData";
+import { customFetch } from "../../utils/api";
+import { useAuth } from '@clerk/clerk-react';
+
+const URL = import.meta.env.VITE_GW;
 
 const inputIcons = {
   name: <User className="w-5 h-5 text-blue-500" />,
@@ -77,12 +81,24 @@ const StunningInput = ({ label, placeholder, name, control, disabled }) => (
 );
 
 export default function ResumeAnalyzerSection({ onCancel }) {
+  
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [location, navigate] = useLocation();
   const { toast } = useToast();
   const { setAnalysisResults } = useMyContext();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [batchId, setBatchId] = useState(null);
+  const { isSignedIn, getToken } = useAuth();
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploadDone, setIsUploadDone] = useState(false);
+
+
+  const fetchToken = async () => {
+    const token = await getToken();
+    return token
+  };
 
   const form = useForm({
     resolver: zodResolver(analysisFormSchema),
@@ -108,13 +124,93 @@ export default function ResumeAnalyzerSection({ onCancel }) {
   const onSave = async () => {
     const valid = await form.trigger(["name", "jobTitle", "department", "jobDescription"]);
     if (!valid) return;
-    setIsSaved(true);
-    toast({
-      title: "Saved!",
-      description: "Basic info saved. You can now add filters and upload resumes.",
-      variant: "success",
-    });
+
+
+    const values = form.getValues();
+    const formData = new FormData();
+    formData.append("job_name", values.jobTitle);
+    formData.append("job_description", values.jobDescription);
+
+    const _token = await fetchToken();
+
+    console.log('_token', _token);
+
+    try {
+      const res = await customFetch(`${URL}/batches/`, {
+        method: "POST",
+        body: formData,
+        stringifyBody: false,
+        credentials: 'omit',
+        token: _token, // Pass the token directly
+        includeAuth: false, // will include Clerk JWT token automatically
+      });
+
+      if (res) {
+        setIsSaved(true);
+        setBatchId(res?.id);
+        toast({
+          title: "Saved!",
+          description: "Basic info saved. You can now add filters and upload resumes.",
+          variant: "success",
+        });
+      }
+
+    } catch (error) {
+      console.error("Save failed:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Something went wrong while saving.",
+        variant: "destructive",
+      });
+    }
   };
+
+useEffect(() => {
+    const zip = uploadedFiles.find((f) => f.name.endsWith(".zip"));
+    if (zip) uploadZipToDMS(zip);
+  }, [uploadedFiles]);
+
+  const uploadZipToDMS = (zipFile) => {
+    setShowUploadModal(true);
+    setUploadProgress(0);
+    setIsUploadDone(false);
+
+    const formData = new FormData();
+    formData.append("file", zipFile);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${URL}/dms/upload/`, true);
+
+    xhr.upload.onprogress = (ev) =>
+      ev.lengthComputable &&
+      setUploadProgress(Math.round((ev.loaded / ev.total) * 100));
+
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        setUploadProgress(100);
+        setIsUploadDone(true);
+      } else {
+        toast({
+          title: "Upload Failed",
+          description: "Something went wrong with the ZIP upload.",
+          variant: "destructive",
+        });
+        setShowUploadModal(false);
+      }
+    };
+
+    xhr.onerror = () => {
+      toast({
+        title: "Network Error",
+        description: "Couldn't reach upload server.",
+        variant: "destructive",
+      });
+      setShowUploadModal(false);
+    };
+
+    xhr.send(formData);
+  };
+
 
   const onSubmit = async (data) => {
     if (uploadedFiles.length === 0) {
