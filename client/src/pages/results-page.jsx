@@ -137,52 +137,68 @@ export default function ResultsPage() {
             {filteredResults.map((result) => (
               <div
                 key={result.id}
-                className="relative bg-white rounded-lg shadow border border-[#E1E5F2] p-4 hover:scale-105 transition-transform cursor-pointer"
+                className="relative group overflow-hidden rounded-3xl shadow-lg cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
                 onClick={() => setSelectedResult(result)}
               >
-                <span
-                  className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold shadow ${statusStyles[result.status] || "bg-gray-200 text-gray-700"}`}
-                >
-                  {result.status.charAt(0).toUpperCase() + result.status.slice(1)}
-                </span>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-bold text-[#2F49D1] mb-2">
+                {/* Holographic shine layer */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#7B8CFF]/10 via-[#5B6CFF]/10 to-[#A9A6FF]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                
+                {/* Moving shine effect */}
+                <div className="absolute inset-0 overflow-hidden">
+                  <div className="absolute -inset-y-full -left-20 w-40 skew-x-[-20deg] bg-gradient-to-r from-transparent via-white/30 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-[shine_1.5s_ease-in-out] transition-opacity duration-300"></div>
+                </div>
+                
+                {/* Main card content */}
+                <div className="relative bg-white/90 backdrop-blur-sm rounded-3xl border border-[#E1E5F2]/50 p-6 z-10 h-full">
+                  <span
+                    className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold shadow ${statusStyles[result.status] || "bg-gray-200 text-gray-700"}`}
+                  >
+                    {result.status.charAt(0).toUpperCase() + result.status.slice(1)}
+                  </span>
+                  
+                  <div className="flex flex-col h-full">
+                    <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#2F49D1] to-[#5B6CFF] mb-3">
                       {result.analysisName}
                     </h3>
-                    <div className="flex items-center mb-2">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="w-5 h-5 text-[#2F49D1] mr-2"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M16 7V6a4 4 0 00-8 0v1M3 7h18M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7"
-                        />
-                      </svg>
-                      <p className="text-[#6E7B8A]">Job Title: {result.jobTitle}</p>
+                    
+                    <div className="flex items-center mb-3">
+                      <div className="p-2 rounded-lg bg-[#F0F4FF] mr-3">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.5"
+                          stroke="currentColor"
+                          className="w-5 h-5 text-[#5B6CFF]"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M16 7V6a4 4 0 00-8 0v1M3 7h18M4 7v10a2 2 0 002 2h12a2 2 0 002-2V7"
+                          />
+                        </svg>
+                      </div>
+                      <p className="text-[#4F4F74] font-medium">Job Title: <span className="text-[#2B265E]">{result.jobTitle}</span></p>
                     </div>
-                    <div className="flex items-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth="1.5"
-                        stroke="currentColor"
-                        className="w-5 h-5 text-[#2F49D1] mr-2"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M12 3v18m9-9H3"
-                        />
-                      </svg>
-                      <p className="text-[#6E7B8A]">Analysis ID: {result.analysisId}</p>
+                    
+                    <div className="flex items-center mt-auto">
+                      <div className="p-2 rounded-lg bg-[#F0F4FF] mr-3">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth="1.5"
+                          stroke="currentColor"
+                          className="w-5 h-5 text-[#5B6CFF]"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 3v18m9-9H3"
+                          />
+                        </svg>
+                      </div>
+                      <p className="text-[#4F4F74] font-medium">Analysis ID: <span className="text-[#2B265E] font-mono">{result.analysisId}</span></p>
                     </div>
                   </div>
                 </div>
