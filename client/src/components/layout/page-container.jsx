@@ -9,7 +9,7 @@ export default function PageContainer({ children, title }) {
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* <Topbar /> */}
         
-        <main className="flex-1 overflow-y-auto custom-scrollbar bg-background p-6">
+        <main className="flex-1 overflow-y-auto custom-scrollbar bg-background p-6 bg-gradient-to-br from-[#f3f4ff] via-[#e8eaff] to-[#dee2ff]">
           {title && (
             <div className="flex items-center justify-between mb-6">
               <h1 className="text-2xl font-display font-bold text-text">{title}</h1>

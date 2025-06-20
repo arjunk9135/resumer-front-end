@@ -110,8 +110,8 @@ const MetricCard = ({
     <motion.div
       whileHover={{ y: -4 }}
       className={cn(
-        "relative rounded-2xl p-6 border group transition-all duration-300 hover:shadow-md",
-        "bg-gradient-to-br from-[#F4F3FF] to-[#E8E9FF] border-[#D8D7FF]"
+        "relative rounded-3xl p-6 border group transition-all duration-300 shadow-md hover:shadow-md",
+        "bg-white border border-[#E4E6F5]"
       )}
     >
       <div className="flex items-start justify-between">
@@ -137,7 +137,6 @@ const MetricCard = ({
 
       {extraContent && <div className="mt-2">{extraContent}</div>}
 
-      {/* Subtle glow on hover */}
       <div className="absolute inset-0 -z-10 rounded-2xl opacity-0 group-hover:opacity-100 blur-md bg-[#A9A6FF]/20 transition-opacity duration-300" />
     </motion.div>
   );
@@ -154,7 +153,7 @@ const MetricCard = ({
         description="Based on evaluation scores"
         icon={<Award className="h-5 w-5 text-white" />}
         color="score"
-        progressValue={metrics.averageScore}
+        progressValue={metrics.averageScore || 75}
       />
       
       {/* Top 10% Score */}
@@ -164,7 +163,7 @@ const MetricCard = ({
         description={`${metrics.top10Count} candidates scored above 90%`}
         icon={<BarChart2 className="h-5 w-5 text-white" />}
         color="top"
-        progressValue={metrics.top10Percent}
+        progressValue={metrics.top10Percent || 10}
         progressColor="emerald"
       />
       
@@ -175,7 +174,7 @@ const MetricCard = ({
         description={`Mostly ${metrics.experienceLevel} level`}
         icon={<Calendar className="h-5 w-5 text-white" />}
         color="experience"
-        progressValue={Math.min(100, metrics.averageExperience * 15)}
+        progressValue={Math.min(100, metrics.averageExperience * 15) || 30}
         progressColor="amber"
         extraContent={
           <div className="flex justify-between mt-2">
@@ -193,7 +192,7 @@ const MetricCard = ({
         description="Average skills per candidate"
         icon={<Wrench className="h-5 w-5 text-white" />}
         color="skills"
-        progressValue={metrics.skillsCoverage}
+        progressValue={metrics.skillsCoverage || 75}
         progressColor="purple"
       />
     </div>

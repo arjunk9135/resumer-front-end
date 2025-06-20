@@ -59,20 +59,20 @@ export default function TieredCandidates({ candidates }) {
     exceptional: {
       label: 'Exceptional Matches',
       description: 'These candidates closely match the job requirements',
-      icon: Trophy, // Swapped icon
-      iconBg: 'bg-green-500', // Swapped color
+      icon: Trophy,
+      iconBg: 'bg-green-600',
       iconText: 'text-white',
-      bgColor: 'bg-green-500/10', // Swapped color
-      textColor: 'text-green-700', // Swapped color
+      bgColor: 'bg-gradient-to-r from-green-100 via-green-50 to-white',
+      textColor: 'text-green-800',
     },
     strong: {
       label: 'Strong Matches',
       description: 'These candidates match most of the job requirements',
-      icon: Star, // Swapped icon
-      iconBg: 'bg-indigo-500', // Swapped color
+      icon: Star,
+      iconBg: 'bg-indigo-500',
       iconText: 'text-white',
-      bgColor: 'bg-indigo-500/10', // Swapped color
-      textColor: 'text-indigo-700', // Swapped color
+      bgColor: 'bg-gradient-to-r from-indigo-100 via-indigo-50 to-white',
+      textColor: 'text-indigo-800',
     },
     qualified: {
       label: 'Qualified Candidates',
@@ -80,8 +80,8 @@ export default function TieredCandidates({ candidates }) {
       icon: CheckCircle2,
       iconBg: 'bg-purple-500',
       iconText: 'text-white',
-      bgColor: 'bg-purple-500/10',
-      textColor: 'text-purple-700',
+      bgColor: 'bg-gradient-to-r from-purple-100 via-purple-50 to-white',
+      textColor: 'text-purple-800',
     },
     potential: {
       label: 'Potential Fits',
@@ -89,8 +89,8 @@ export default function TieredCandidates({ candidates }) {
       icon: CircleHelp,
       iconBg: 'bg-blue-500',
       iconText: 'text-white',
-      bgColor: 'bg-blue-500/10',
-      textColor: 'text-blue-700',
+      bgColor: 'bg-gradient-to-r from-blue-100 via-blue-50 to-white',
+      textColor: 'text-blue-800',
     },
     notRecommended: {
       label: 'Not Recommended',
@@ -98,8 +98,8 @@ export default function TieredCandidates({ candidates }) {
       icon: XCircle,
       iconBg: 'bg-red-500',
       iconText: 'text-white',
-      bgColor: 'bg-red-500/10',
-      textColor: 'text-red-700',
+      bgColor: 'bg-gradient-to-r from-red-100 via-red-50 to-white',
+      textColor: 'text-red-800',
     },
   };
 
@@ -152,22 +152,28 @@ export default function TieredCandidates({ candidates }) {
                 <div key={candidate.id} className="p-3 bg-gray-50 rounded flex flex-col sm:flex-row sm:items-center">
                   <div className="flex-grow">
                     <div className="flex items-center">
-                      <h4 className="font-medium text-sm">{candidate.name}</h4>
-                      <Badge className="ml-2">{candidate.matchScore}%</Badge>
+                      <h4 className="font-medium text-sm text-gray-800">{candidate.name}</h4>
+                      <Badge className="ml-2 bg-violet-500 text-white hover:bg-violet-600">
+                        {candidate.matchScore}%
+                      </Badge>
                     </div>
                     <p className="text-xs text-gray-500 mt-1">
                       Clarity: {candidate?.clarity} • Education Score: {candidate.education}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-1">
                       {candidate.skills.map((skill, i) => (
-                        <Badge key={i} variant="outline" className="mr-1 mb-1 text-xs">
+                        <Badge
+                          key={i}
+                          variant="outline"
+                          className="mr-1 mb-1 text-xs border border-violet-300 text-violet-700"
+                        >
                           {skill}
                         </Badge>
                       ))}
                     </div>
                   </div>
                   <div className="mt-3 sm:mt-0 flex sm:flex-col items-center sm:items-end">
-                    <Button variant="link" size="sm" className="h-auto p-0 text-primary">
+                    <Button variant="link" size="sm" className="h-auto p-0 text-indigo-600">
                       View Resume
                     </Button>
                   </div>
@@ -181,10 +187,10 @@ export default function TieredCandidates({ candidates }) {
   };
 
   return (
-    <Card className="shadow-lg rounded-xl">
-      <CardHeader className="pb-2">
+    <Card className="shadow-lg rounded-xl border border-[#E0DFFF] bg-gradient-to-br from-[#F7F6FF] to-[#ECECFF]">
+      <CardHeader className="pb-2 border-b border-[#D8D7FF] bg-gradient-to-r from-[#A79DFE] to-[#B3A7FF] text-white rounded-t-xl">
         <CardTitle className="text-lg font-medium flex items-center gap-2">
-          <Users className="h-5 w-5 text-gray-500" />
+          <Users className="h-5 w-5" />
           Candidates by Tier
         </CardTitle>
       </CardHeader>

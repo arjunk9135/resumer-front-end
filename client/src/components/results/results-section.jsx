@@ -257,7 +257,7 @@ export default function ResultsSection() {
         {/* Results Header */}
         {/* Results Header */}
         <Card>
-          <CardContent className="p-6 bg-gradient-to-br from-gray-50 to-white dark:from-gray-900/50 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <CardContent className="p-6 bg-gradient-to-br rounded-3xl from-gray-50 to-white dark:from-gray-900/50 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700">
   <motion.div 
     className="flex flex-col md:flex-row md:items-center justify-between gap-4"
     initial={{ opacity: 0, y: 10 }}
@@ -265,7 +265,7 @@ export default function ResultsSection() {
     transition={{ duration: 0.3 }}
   >
     <div>
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+      <h2 className="text-xl font-semibold text-gray-900 dark:text-white ">
         {currentAnalysis?.jobTitle || JSON.parse(localStorage?.getItem('data'))?.jobTitle}
       </h2>
       <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">

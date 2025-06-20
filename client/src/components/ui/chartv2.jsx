@@ -1,25 +1,31 @@
-import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend, Title } from 'chart.js';
+import {
+  Chart as ChartJS,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  ArcElement,
+  Tooltip,
+  Legend,
+  Title
+} from 'chart.js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bar, Pie } from 'react-chartjs-2';
 
-// Register required Chart.js components
 ChartJS.register(BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend, Title);
 
 export default function Chartv2({ candidates, loading }) {
-  console.log('dummyCandidates?.candidates:', candidates);
   if (loading || !candidates || candidates.length === 0) {
-    return <div className="text-center py-8">Loading chart data...</div>;
+    return <div className="text-center py-8 text-sm text-[#6E7B8A]">Loading chart data...</div>;
   }
 
-  // Process candidates data for charts
   const categoryChartData = {
     labels: ['Clarity & Structure', 'Relevant Experience', 'Achievements', 'Skills Match', 'Professionalism'],
     datasets: [{
       label: 'Average Score (%)',
       data: candidates.map(candidate => candidate.evaluation.overall.score),
-      backgroundColor: 'rgba(99, 102, 241, 0.8)', // Subtle Indigo
-      borderColor: 'rgba(99, 102, 241, 1)',
-      borderWidth: 1
+      backgroundColor: 'rgba(91,108,255,0.85)',
+      borderRadius: 8,
+      barThickness: 18,
     }]
   };
 
@@ -28,9 +34,9 @@ export default function Chartv2({ candidates, loading }) {
     datasets: [{
       label: 'Overall Score',
       data: candidates.map(candidate => candidate.evaluation.overall.score),
-      backgroundColor: 'rgba(16, 185, 129, 0.8)', // Subtle Emerald
-      borderColor: 'rgba(16, 185, 129, 1)',
-      borderWidth: 1
+      backgroundColor: 'rgba(91,108,255,0.75)',
+      borderRadius: 6,
+      barThickness: 16,
     }]
   };
 
@@ -38,64 +44,49 @@ export default function Chartv2({ candidates, loading }) {
     labels: ['0-1 yrs', '1-3 yrs', '3-5 yrs', '5+ yrs'],
     datasets: [{
       data: [
-        candidates.filter(candidate => candidate.experience <= 1).length,
-        candidates.filter(candidate => candidate.experience > 1 && candidate.experience <= 3).length,
-        candidates.filter(candidate => candidate.experience > 3 && candidate.experience <= 5).length,
-        candidates.filter(candidate => candidate.experience > 5).length
+        candidates.filter(c => c.experience <= 1).length,
+        candidates.filter(c => c.experience > 1 && c.experience <= 3).length,
+        candidates.filter(c => c.experience > 3 && c.experience <= 5).length,
+        candidates.filter(c => c.experience > 5).length
       ],
       backgroundColor: [
-        'rgba(99, 102, 241, 0.8)', // Indigo
-        'rgba(16, 185, 129, 0.8)', // Emerald
-        'rgba(234, 179, 8, 0.8)',  // Amber
-        'rgba(239, 68, 68, 0.8)'   // Red
+        '#3B5BFF',
+        '#5E75FF',
+        '#7B8CFF',
+        '#B1C0FF'
       ],
-      borderColor: [
-        'rgba(99, 102, 241, 1)',
-        'rgba(16, 185, 129, 1)',
-        'rgba(234, 179, 8, 1)',
-        'rgba(239, 68, 68, 1)'
-      ],
-      borderWidth: 1
+      borderColor: '#ffffff',
+      borderWidth: 2,
+      cutout: '70%',
     }]
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
       {/* Horizontal Bar Chart */}
-      <Card className="bg-white border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <CardHeader>
-          <CardTitle className="text-gray-800">Category Scores Analysis</CardTitle>
+      <Card className="bg-white border border-[#E1E5F2] rounded-3xl shadow hover:shadow-md transition">
+        <CardHeader className="px-4 py-3 border-none border-[#E1E5F2]  rounded-t-xl">
+          <CardTitle className="text-sm font-semibold text-[#2B265E]">Category Scores Analysis</CardTitle>
         </CardHeader>
-        <CardContent className="h-[300px]">
-          <Bar 
+        <CardContent className="h-[300px] px-4 py-2">
+          <Bar
             data={categoryChartData}
             options={{
               indexAxis: 'y',
               responsive: true,
               maintainAspectRatio: false,
               plugins: {
-                title: {
-                  display: true,
-                  text: 'Average Scores by Category',
-                  color: '#374151', // Gray text for better contrast
-                  font: {
-                    size: 16
-                  }
-                },
-                legend: {
-                  display: false
-                }
+                legend: { display: false },
               },
               scales: {
                 x: {
-                  ticks: {
-                    color: '#374151' // Gray ticks
-                  }
+                  beginAtZero: true,
+                  ticks: { color: '#A1A5B3', font: { size: 10 } },
+                  grid: { drawBorder: false, color: '#F0F0F0' }
                 },
                 y: {
-                  ticks: {
-                    color: '#374151' // Gray ticks
-                  }
+                  ticks: { color: '#2B265E', font: { size: 11 } },
+                  grid: { display: false }
                 }
               }
             }}
@@ -103,43 +94,29 @@ export default function Chartv2({ candidates, loading }) {
         </CardContent>
       </Card>
 
-      {/* Histogram */}
-      <Card className="bg-white border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <CardHeader>
-          <CardTitle className="text-gray-800">Score Distribution</CardTitle>
+      {/* Vertical Bar Chart */}
+      <Card className="bg-white border border-[#E1E5F2] rounded-3xl shadow hover:shadow-md transition">
+        <CardHeader className="px-4 py-3 border-none border-[#E1E5F2]  rounded-t-xl">
+          <CardTitle className="text-sm font-semibold text-[#2B265E]">Score Distribution</CardTitle>
         </CardHeader>
-        <CardContent className="h-[300px]">
-          <Bar 
+        <CardContent className="h-[300px] px-4 py-2">
+          <Bar
             data={histogramData}
             options={{
               responsive: true,
               maintainAspectRatio: false,
               plugins: {
-                title: {
-                  display: true,
-                  text: 'Candidate Match Score Distribution',
-                  color: '#374151', // Gray text for better contrast
-                  font: {
-                    size: 16
-                  }
-                }
+                legend: { display: false },
               },
               scales: {
                 y: {
                   beginAtZero: true,
-                  title: {
-                    display: true,
-                    text: 'Overall Score',
-                    color: '#374151' // Gray text
-                  },
-                  ticks: {
-                    color: '#374151' // Gray ticks
-                  }
+                  ticks: { color: '#A1A5B3', font: { size: 10 } },
+                  grid: { drawBorder: false, color: '#F0F0F0' }
                 },
                 x: {
-                  ticks: {
-                    color: '#374151' // Gray ticks
-                  }
+                  ticks: { color: '#2B265E', font: { size: 11 } },
+                  grid: { display: false }
                 }
               }
             }}
@@ -148,31 +125,26 @@ export default function Chartv2({ candidates, loading }) {
       </Card>
 
       {/* Donut Chart */}
-      <Card className="bg-white border border-gray-200 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <CardHeader>
-          <CardTitle className="text-gray-800">Experience Level Distribution</CardTitle>
+      <Card className="bg-white border border-[#E1E5F2] rounded-3xl shadow hover:shadow-md transition">
+        <CardHeader className="px-4 py-3 border-none border-[#E1E5F2]  rounded-t-xl">
+          <CardTitle className="text-sm font-semibold text-[#2B265E]">Experience Level</CardTitle>
         </CardHeader>
-        <CardContent className="h-[300px]">
-          <Pie 
+        <CardContent className="h-[300px] flex items-center justify-center">
+          <Pie
             data={donutData}
             options={{
               responsive: true,
               maintainAspectRatio: false,
               plugins: {
-                title: {
-                  display: true,
-                  text: 'Candidate Experience Breakdown',
-                  color: '#374151', // Gray text for better contrast
-                  font: {
-                    size: 16
-                  }
-                },
                 legend: {
                   position: 'right',
                   labels: {
-                    color: '#374151' // Gray text for legend
+                    color: '#2B265E',
+                    boxWidth: 10,
+                    padding: 12,
+                    font: { size: 11 }
                   }
-                }
+                },
               },
               cutout: '70%'
             }}

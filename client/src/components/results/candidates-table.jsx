@@ -82,7 +82,7 @@ export default function CandidatesTable({ candidates, loading, sortType, setSort
   return (
     <Card className="shadow-lg rounded-xl border border-[#E0DFFF] bg-gradient-to-br from-[#F7F6FF] to-[#ECECFF]">
       <CardHeader className="px-6 py-5 border-b border-[#D8D7FF] flex flex-col sm:flex-row sm:items-center sm:justify-between bg-gradient-to-r from-[#A79DFE] to-[#B3A7FF] text-white rounded-t-xl">
-        <CardTitle className="font-display font-semibold text-lg">
+        <CardTitle className="font-display font-semibold text-lg text-white">
           Candidates ({filteredCandidates.length})
         </CardTitle>
         <div className="flex items-center gap-4">
