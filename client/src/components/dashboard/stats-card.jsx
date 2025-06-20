@@ -4,36 +4,37 @@ import { cn } from '@/lib/utils';
 
 const colorMap = {
   primary: {
-    bg: 'bg-indigo-500/10',
-    iconBg: 'bg-gradient-to-br from-indigo-500 to-purple-600',
+    bg: 'bg-[#5B6CFF]/10',
+    iconBg: 'bg-gradient-to-br from-[#5B6CFF] to-[#3F4FCC]',
     icon: 'text-white',
-    text: 'text-indigo-700 dark:text-indigo-300',
-    value: 'text-indigo-900 dark:text-white',
-    changeUp: 'text-emerald-600 dark:text-emerald-400',
-    changeDown: 'text-rose-600 dark:text-rose-400',
-    border: 'border-indigo-200 dark:border-indigo-900/50',
+    text: 'text-[#3F4FCC] dark:text-[#7B8CFF]',
+    value: 'text-[#2F49D1] dark:text-white',
+    changeUp: 'text-[#44C97F] dark:text-[#44C97F]',
+    changeDown: 'text-[#F95E5E] dark:text-[#F95E5E]',
+    border: 'border-[#E1E5F2] dark:border-[#3F4FCC]/50',
   },
   secondary: {
-    bg: 'bg-emerald-500/10',
-    iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600',
+    bg: 'bg-[#44C97F]/10',
+    iconBg: 'bg-gradient-to-br from-[#44C97F] to-[#2F855A]',
     icon: 'text-white',
-    text: 'text-emerald-700 dark:text-emerald-300',
-    value: 'text-emerald-900 dark:text-white',
-    changeUp: 'text-emerald-600 dark:text-emerald-400',
-    changeDown: 'text-rose-600 dark:text-rose-400',
-    border: 'border-emerald-200 dark:border-emerald-900/50',
+    text: 'text-[#2F855A] dark:text-[#44C97F]',
+    value: 'text-[#22543D] dark:text-white',
+    changeUp: 'text-[#44C97F] dark:text-[#44C97F]',
+    changeDown: 'text-[#F95E5E] dark:text-[#F95E5E]',
+    border: 'border-[#C6F6D5] dark:border-[#2F855A]/50',
   },
   accent: {
-    bg: 'bg-purple-500/10',
-    iconBg: 'bg-gradient-to-br from-purple-500 to-fuchsia-600',
+    bg: 'bg-[#7B8CFF]/10',
+    iconBg: 'bg-gradient-to-br from-[#7B8CFF] to-[#5B6CFF]',
     icon: 'text-white',
-    text: 'text-purple-700 dark:text-purple-300',
-    value: 'text-purple-900 dark:text-white',
-    changeUp: 'text-emerald-600 dark:text-emerald-400',
-    changeDown: 'text-rose-600 dark:text-rose-400',
-    border: 'border-purple-200 dark:border-purple-900/50',
+    text: 'text-[#5B6CFF] dark:text-[#7B8CFF]',
+    value: 'text-[#3F4FCC] dark:text-white',
+    changeUp: 'text-[#44C97F] dark:text-[#44C97F]',
+    changeDown: 'text-[#F95E5E] dark:text-[#F95E5E]',
+    border: 'border-[#D6DFFF] dark:border-[#5B6CFF]/50',
   },
 };
+
 
 export default function StatsCard({ title, value, change, icon, color = 'primary' }) {
   const icons = {

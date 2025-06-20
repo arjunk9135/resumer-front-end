@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import Chartv2 from '../../components/ui/chartv2';
+import { dummyCandidates } from '../ui/dummyData';
 
 export default function ResultsSection() {
   const { id } = useParams();
@@ -360,18 +361,18 @@ export default function ResultsSection() {
 
         {/* Charts Row */}
         <Chartv2
-          candidates={analysisResults?.candidates}
+          candidates={analysisResults?.candidates || dummyCandidates}
           loading={candidatesLoading}
         />
 
         {/* Tiered Candidates Section */}
-        {!candidatesLoading && analysisResults?.candidates?.length > 0 && (
-          <TieredCandidates candidates={analysisResults?.candidates} />
+        {!candidatesLoading && (analysisResults?.candidates?.length > 0 || dummyCandidates?.length > 0) && (
+          <TieredCandidates candidates={analysisResults?.candidates || dummyCandidates} />
         )}
 
         {/* Candidates Table */}
         <CandidatesTable
-          candidates={analysisResults?.candidates || candidates}
+          candidates={analysisResults?.candidates || dummyCandidates}
           loading={candidatesLoading}
           sortType={sortType}
         />

@@ -6,6 +6,7 @@ import { Bar, Pie } from 'react-chartjs-2';
 ChartJS.register(BarElement, CategoryScale, LinearScale, ArcElement, Tooltip, Legend, Title);
 
 export default function Chartv2({ candidates, loading }) {
+  console.log('dummyCandidates?.candidates:', candidates);
   if (loading || !candidates || candidates.length === 0) {
     return <div className="text-center py-8">Loading chart data...</div>;
   }

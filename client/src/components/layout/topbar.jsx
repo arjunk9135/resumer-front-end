@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { Bell } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { SignOutButton, UserButton } from '@clerk/clerk-react'
+import {  UserButton } from '@clerk/clerk-react'
 
 
 import {

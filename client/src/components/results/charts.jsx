@@ -13,10 +13,9 @@ import {
   LabelList
 } from 'recharts';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
+const COLORS = ['#3B5BFF', '#5E75FF', '#7B8CFF', '#44C97F', '#F95E5E', '#FFBB28'];
 
 export default function EvaluationCharts({ candidates, loading }) {
-  // Prepare average scores across all evaluation categories
   const getCategoryAverages = () => {
     if (!candidates?.length) return [];
 
@@ -41,7 +40,6 @@ export default function EvaluationCharts({ candidates, loading }) {
     });
   };
 
-  // Prepare overall score distribution
   const getScoreDistribution = () => {
     if (!candidates?.length) return [];
 
@@ -61,7 +59,6 @@ export default function EvaluationCharts({ candidates, loading }) {
     return scoreRanges;
   };
 
-  // Prepare top performing candidates
   const getTopCandidates = () => {
     if (!candidates?.length) return [];
 
@@ -69,21 +66,19 @@ export default function EvaluationCharts({ candidates, loading }) {
       .sort((a, b) => b.evaluation.overall.score - a.evaluation.overall.score)
       .slice(0, 3)
       .map(candidate => ({
-        name: candidate.name.split('_')[0], // Just first name
+        name: candidate.name.split('_')[0],
         score: candidate.evaluation.overall.score,
         ranking: candidate.evaluation.overall.ranking
       }));
   };
 
-  // Custom label for pie chart
   const renderCustomizedLabel = ({
     cx,
     cy,
     midAngle,
     innerRadius,
     outerRadius,
-    percent,
-    index
+    percent
   }) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
@@ -112,11 +107,11 @@ export default function EvaluationCharts({ candidates, loading }) {
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 border border-gray-200 rounded-md shadow-sm text-sm">
-          <p className="font-medium">{payload[0].name || payload[0].payload.name}</p>
+        <div className="bg-white p-3 border border-[#E1E5F2] rounded-md shadow-sm text-sm text-[#2F49D1]">
+          <p className="font-semibold">{payload[0].name || payload[0].payload.name}</p>
           <p>Score: {payload[0].value}{payload[0].payload.max ? `/${payload[0].payload.max}` : ''}</p>
           {payload[0].payload.analysis && (
-            <p className="text-xs mt-1 text-gray-600">{payload[0].payload.analysis}</p>
+            <p className="text-xs mt-1 text-[#6E7B8A]">{payload[0].payload.analysis}</p>
           )}
         </div>
       );
@@ -126,26 +121,20 @@ export default function EvaluationCharts({ candidates, loading }) {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {/* Fixed Category Averages Pie Chart */}
-      <Card className="h-80">
-        <CardHeader className="px-4 py-3 border-b">
-          <CardTitle className="text-sm font-medium">Evaluation Category Averages</CardTitle>
+      <Card className="h-80 border border-[#E1E5F2] bg-white">
+        <CardHeader className="px-4 py-3 border-b border-[#E1E5F2] bg-[#F4F7FE]">
+          <CardTitle className="text-sm font-medium text-[#2F49D1]">Evaluation Category Averages</CardTitle>
         </CardHeader>
         <CardContent className="p-4 h-[calc(100%-52px)]">
           {loading ? (
             <div className="h-full flex items-center justify-center">
-              <p className="text-gray-500 text-sm">Loading...</p>
+              <p className="text-[#6E7B8A] text-sm">Loading...</p>
             </div>
           ) : !categoryAverages.length ? (
             <div className="h-full flex items-center justify-center">
-              <div className="flex flex-col items-center text-gray-500 text-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                </svg>
-
+              <div className="flex flex-col items-center text-[#6E7B8A] text-sm">
                 <span>No data</span>
               </div>
-
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
@@ -164,56 +153,37 @@ export default function EvaluationCharts({ candidates, loading }) {
                   {categoryAverages.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
-                  <LabelList
-                    dataKey="name"
-                    position="outside"
-                    offset={15}
-                    fontSize={10}
-                    fill="#333"
-                    angle={0}
-                    stroke="none"
-                  />
                 </Pie>
                 <Tooltip content={<CustomTooltip />} />
-                <Legend
-                  layout="horizontal"
-                  verticalAlign="bottom"
-                  height={36}
-                  wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }}
-                />
+                <Legend layout="horizontal" verticalAlign="bottom" height={36} wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
               </PieChart>
             </ResponsiveContainer>
           )}
         </CardContent>
       </Card>
 
-      {/* Score Distribution */}
-      <Card className="h-80">
-        <CardHeader className="px-4 py-3 border-b">
-          <CardTitle className="text-sm font-medium">Score Distribution</CardTitle>
+      <Card className="h-80 border border-[#E1E5F2] bg-white">
+        <CardHeader className="px-4 py-3 border-b border-[#E1E5F2] bg-[#F4F7FE]">
+          <CardTitle className="text-sm font-medium text-[#2F49D1]">Score Distribution</CardTitle>
         </CardHeader>
         <CardContent className="p-4 h-[calc(100%-52px)]">
           {loading ? (
             <div className="h-full flex items-center justify-center">
-              <p className="text-gray-500 text-sm">Loading...</p>
+              <p className="text-[#6E7B8A] text-sm">Loading...</p>
             </div>
           ) : !scoreDistribution.length ? (
             <div className="h-full flex items-center justify-center">
-              <div className="flex flex-col items-center text-gray-500 text-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                </svg>
-
+              <div className="flex flex-col items-center text-[#6E7B8A] text-sm">
                 <span>No data</span>
               </div>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={scoreDistribution} margin={{ left: -20 }}>
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="#6E7B8A" />
+                <YAxis tick={{ fontSize: 10 }} stroke="#6E7B8A" />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="count" fill="#8884d8" radius={[4, 4, 0, 0]}>
+                <Bar dataKey="count" fill="#3B5BFF" radius={[4, 4, 0, 0]}>
                   {scoreDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
@@ -224,23 +194,18 @@ export default function EvaluationCharts({ candidates, loading }) {
         </CardContent>
       </Card>
 
-      {/* Top Candidates */}
-      <Card className="h-80">
-        <CardHeader className="px-4 py-3 border-b">
-          <CardTitle className="text-sm font-medium">Top Candidates</CardTitle>
+      <Card className="h-80 border border-[#E1E5F2] bg-white">
+        <CardHeader className="px-4 py-3 border-b border-[#E1E5F2] bg-[#F4F7FE]">
+          <CardTitle className="text-sm font-medium text-[#2F49D1]">Top Candidates</CardTitle>
         </CardHeader>
         <CardContent className="p-4 h-[calc(100%-52px)]">
           {loading ? (
             <div className="h-full flex items-center justify-center">
-              <p className="text-gray-500 text-sm">Loading...</p>
+              <p className="text-[#6E7B8A] text-sm">Loading...</p>
             </div>
           ) : !topCandidates.length ? (
             <div className="h-full flex items-center justify-center">
-             <div className="flex flex-col items-center text-gray-500 text-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
-                </svg>
-
+              <div className="flex flex-col items-center text-[#6E7B8A] text-sm">
                 <span>No data</span>
               </div>
             </div>
@@ -251,18 +216,10 @@ export default function EvaluationCharts({ candidates, loading }) {
                 layout="vertical"
                 margin={{ left: 30, right: 20 }}
               >
-                <XAxis type="number" domain={[0, 10]} tick={{ fontSize: 10 }} />
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  width={80}
-                  tick={{ fontSize: 10 }}
-                />
-                <Tooltip
-                  content={<CustomTooltip />}
-                  formatter={(value) => [`Score: ${value}/10`, '']}
-                />
-                <Bar dataKey="score" fill="#82CA9D" radius={[0, 4, 4, 0]}>
+                <XAxis type="number" domain={[0, 10]} tick={{ fontSize: 10 }} stroke="#6E7B8A" />
+                <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 10 }} stroke="#6E7B8A" />
+                <Tooltip content={<CustomTooltip />} formatter={(value) => [`Score: ${value}/10`, '']} />
+                <Bar dataKey="score" fill="#44C97F" radius={[0, 4, 4, 0]}>
                   {topCandidates.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}

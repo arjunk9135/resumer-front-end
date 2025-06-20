@@ -4,36 +4,19 @@ import { cn } from '@/lib/utils';
 
 export default function AnalyticsOverview({ candidates, loading }) {
   // Color scheme configuration
-  const colorMap = {
-    score: {
-      bg: 'bg-indigo-500/10',
-      iconBg: 'bg-gradient-to-br from-indigo-500 to-purple-600',
-      text: 'text-indigo-700 dark:text-indigo-300',
-      value: 'text-indigo-900 dark:text-white',
-      border: 'border-indigo-200 dark:border-indigo-900/50',
-    },
-    top: {
-      bg: 'bg-emerald-500/10',
-      iconBg: 'bg-gradient-to-br from-emerald-500 to-teal-600',
-      text: 'text-emerald-700 dark:text-emerald-300',
-      value: 'text-emerald-900 dark:text-white',
-      border: 'border-emerald-200 dark:border-emerald-900/50',
-    },
-    experience: {
-      bg: 'bg-amber-500/10',
-      iconBg: 'bg-gradient-to-br from-amber-500 to-orange-600',
-      text: 'text-amber-700 dark:text-amber-300',
-      value: 'text-amber-900 dark:text-white',
-      border: 'border-amber-200 dark:border-amber-900/50',
-    },
-    skills: {
-      bg: 'bg-purple-500/10',
-      iconBg: 'bg-gradient-to-br from-purple-500 to-fuchsia-600',
-      text: 'text-purple-700 dark:text-purple-300',
-      value: 'text-purple-900 dark:text-white',
-      border: 'border-purple-200 dark:border-purple-900/50',
-    }
-  };
+// Define semantic color palette map
+const paletteMap = {
+  violet: {
+    bg: 'bg-violet-50 dark:bg-violet-950',
+    iconBg: 'bg-gradient-to-br from-violet-500 to-purple-600',
+    text: 'text-violet-700 dark:text-violet-300',
+    value: 'text-violet-900 dark:text-white',
+    border: 'border-violet-200 dark:border-violet-800',
+    glow: 'bg-violet-400/20',
+  },
+};
+
+
 
   // Calculate analytics metrics
   const calculateMetrics = () => {
@@ -103,93 +86,64 @@ export default function AnalyticsOverview({ candidates, loading }) {
   const metrics = calculateMetrics();
 
   // Animated Progress Bar component
-  const ProgressBar = ({ value, color = 'indigo' }) => (
-    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-3 overflow-hidden">
-      <motion.div 
-        initial={{ width: 0 }}
-        animate={{ width: `${Math.min(100, Math.max(0, value))}%` }}
-        transition={{ duration: 0.8, type: 'spring' }}
-        className={cn(
-          'h-2 rounded-full',
-          color === 'indigo' && 'bg-indigo-600',
-          color === 'emerald' && 'bg-emerald-600',
-          color === 'amber' && 'bg-amber-600',
-          color === 'purple' && 'bg-purple-600'
-        )}
-      />
-    </div>
-  );
+  const ProgressBar = ({ value }) => (
+  <div className="w-full bg-[#F4F7FE] rounded-full h-2 mt-3 overflow-hidden">
+    <motion.div
+      initial={{ width: 0 }}
+      animate={{ width: `${Math.min(100, Math.max(0, value))}%` }}
+      transition={{ duration: 0.8, type: 'spring' }}
+      className="h-2 rounded-full bg-gradient-to-r from-[#7B8CFF] to-[#5B6CFF]"
+    />
+  </div>
+);
 
   // Metric Card component
-  const MetricCard = ({ 
-    title, 
-    value, 
-    description, 
-    icon, 
-    color = 'score',
-    progressValue,
-    progressColor,
-    extraContent
-  }) => {
-    const colors = colorMap[color] || colorMap.score;
-    
-    return (
-      <motion.div
-        whileHover={{ y: -5 }}
-        className={cn(
-          "relative rounded-xl p-6 border backdrop-blur-sm",
-          colors.bg,
-          colors.border,
-          "transition-all duration-300 hover:shadow-lg"
-        )}
-      >
-        <div className="flex items-start justify-between">
-          <div>
-            <p className={cn("text-sm font-medium mb-1", colors.text)}>
-              {title}
-            </p>
-            <h3 className={cn("text-3xl font-bold", colors.value)}>
-              {loading ? '...' : value}
-            </h3>
-          </div>
-          
-          <div className={cn(
-            "p-3 rounded-xl shadow-sm",
-            colors.iconBg
-          )}>
-            {icon}
-          </div>
+const MetricCard = ({
+  title,
+  value,
+  description,
+  icon,
+  progressValue,
+  extraContent
+}) => {
+  return (
+    <motion.div
+      whileHover={{ y: -4 }}
+      className={cn(
+        "relative rounded-2xl p-6 border group transition-all duration-300 hover:shadow-md",
+        "bg-gradient-to-br from-[#F4F3FF] to-[#E8E9FF] border-[#D8D7FF]"
+      )}
+    >
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm font-medium text-[#5E5BD1] mb-1">
+            {title}
+          </p>
+          <h3 className="text-3xl font-bold text-[#2B265E]">
+            {value}
+          </h3>
         </div>
 
-        {progressValue !== undefined && (
-          <ProgressBar 
-            value={progressValue} 
-            color={progressColor || color} 
-          />
-        )}
+        <div className="p-3 rounded-xl bg-gradient-to-br from-[#7B8CFF] to-[#5B6CFF] shadow-sm text-white">
+          {icon}
+        </div>
+      </div>
 
-        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-          {loading ? '...' : description}
-        </p>
+      {progressValue !== undefined && (
+        <ProgressBar value={progressValue} />
+      )}
 
-        {extraContent && (
-          <div className="mt-2">
-            {extraContent}
-          </div>
-        )}
+      <p className="mt-2 text-sm text-[#4F4F74]">{description}</p>
 
-        {/* Glow effect */}
-        <div className={cn(
-          "absolute inset-0 -z-10 rounded-xl opacity-0 group-hover:opacity-100 blur-md",
-          color === 'score' && 'bg-indigo-400/20',
-          color === 'top' && 'bg-emerald-400/20',
-          color === 'experience' && 'bg-amber-400/20',
-          color === 'skills' && 'bg-purple-400/20',
-          "transition-opacity duration-300"
-        )} />
-      </motion.div>
-    );
-  };
+      {extraContent && <div className="mt-2">{extraContent}</div>}
+
+      {/* Subtle glow on hover */}
+      <div className="absolute inset-0 -z-10 rounded-2xl opacity-0 group-hover:opacity-100 blur-md bg-[#A9A6FF]/20 transition-opacity duration-300" />
+    </motion.div>
+  );
+};
+
+
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

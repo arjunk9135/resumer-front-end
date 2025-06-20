@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import { motion } from 'framer-motion';
@@ -8,21 +7,14 @@ import PageContainer from '@/components/layout/page-container';
 import StatsCard from '@/components/dashboard/stats-card';
 import RecentAnalysesTable from '@/components/dashboard/recent-analyses-table';
 import InProgressCard from '@/components/dashboard/in-progress-card';
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 export default function DashboardPage() {
-  // Fetch analyses data
-  const { data: analyses = [] } = useQuery({
-    queryKey: ['/api/analyses'],
-  });
+  const { data: analyses = [] } = useQuery({ queryKey: ['/api/analyses'] });
 
-  // Filter analyses by status
   const completedAnalyses = analyses.filter(a => a.status === 'completed');
   const inProgressAnalyses = analyses.filter(a => a.status === 'processing' || a.status === 'queued');
 
-  // Calculate impressive stats
   const totalAnalyses = analyses.length;
   const totalCandidates = analyses.reduce((sum, analysis) => sum + analysis.candidateCount, 0);
   const queuedAnalyses = analyses.filter(a => a.status === 'queued').length;
@@ -32,12 +24,11 @@ export default function DashboardPage() {
     ? (averageScores.reduce((sum, score) => sum + score, 0) / averageScores.length).toFixed(1)
     : '-';
 
-  // New success rate metric
-  const successRate = ((completedAnalyses.length / Math.max(1, totalAnalyses)) * 100);
+  const successRate = ((completedAnalyses.length / Math.max(1, totalAnalyses)) * 100).toFixed(1);
 
   return (
     <PageContainer title="Insights Dashboard">
-      {/* Glowing Stats Overview */}
+      {/* Stats Cards */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -62,7 +53,7 @@ export default function DashboardPage() {
 
         <StatsCard
           title="Success Rate"
-          value={`${successRate.toFixed(1)}%`}
+          value={`${successRate}%`}
           change={{ value: "15%", direction: "up", text: "all time best" }}
           icon={<TrendingUp className="text-green-400" />}
           color="accent"
@@ -77,22 +68,20 @@ export default function DashboardPage() {
         />
       </motion.div>
 
-      {/* Main Content Area */}
+      {/* Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Recent Analyses - Enhanced */}
+        {/* Recent Analyses */}
         <div className="lg:col-span-2">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="bg-gradient-to-br from-indigo-900/30 to-purple-900/30 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl overflow-hidden"
+            className="bg-gradient-to-br from-[#7B8CFF]/20 to-[#5B6CFF]/20 backdrop-blur-lg border border-[#E1E5F2]/30 rounded-3xl shadow-[0_10px_40px_rgba(123,140,255,0.2)] overflow-hidden"
           >
-            <header className="px-8 py-6 border-b border-white/30 flex justify-between items-center">
-               <h2 className="font-display font-bold text-2xl text-white">
-                Recent Analysis
-              </h2>
-              
+            <header className="px-8 py-6 border-b border-[#E1E5F2]/30 flex justify-between items-center">
+              <h2 className="font-display font-bold text-2xl text-[#1F2937]">Recent Analysis</h2>
             </header>
+
             <main className="p-1 overflow-auto max-h-96">
               <RecentAnalysesTable 
                 analyses={completedAnalyses.slice(0, 5)} 
@@ -102,19 +91,20 @@ export default function DashboardPage() {
           </motion.div>
         </div>
 
-        {/* In Progress - Enhanced */}
+        {/* In Progress */}
         <div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-gradient-to-br from-indigo-900/30 to-purple-900/30 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl overflow-hidden h-full"
+            className="bg-gradient-to-br from-[#7B8CFF]/20 to-[#5B6CFF]/20 backdrop-blur-lg border border-[#E1E5F2]/30 rounded-3xl shadow-[0_10px_40px_rgba(123,140,255,0.2)] overflow-hidden h-full"
           >
-            <header className="px-8 py-6 border-b border-white/30">
-              <h2 className="font-display font-bold text-2xl text-white">
+            <header className="px-8 py-6 border-b border-[#E1E5F2]/30">
+              <h2 className="font-display font-bold text-2xl text-[#1F2937]">
                 Current Active Analyses
               </h2>
             </header>
+
             <main className="p-6 space-y-4">
               {inProgressAnalyses.length > 0 ? (
                 inProgressAnalyses.slice(0, 3).map(analysis => (
