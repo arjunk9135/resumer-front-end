@@ -5,6 +5,8 @@ import { z } from "zod";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useMyContext } from "../../hooks/use-context";
+import { motion } from "framer-motion";
+
 import Loader from "../ui/Loader/Loader";
 import {
   Dialog,
@@ -617,73 +619,82 @@ export default function ResumeAnalyzerSection({ onCancel }) {
           </form>
         </Form>
       </div>
-      <Dialog open={showUploadModal} onOpenChange={(open) => {
-        if (!open && (uploadStatus === 'success' || uploadStatus === 'error')) {
-          setShowUploadModal(false);
-        }
-      }}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-center">
-              {uploadStatus === 'uploading' ? 'Uploading Document' :
-                uploadStatus === 'success' ? 'Upload Complete' : 'Upload Failed'}
-            </DialogTitle>
-          </DialogHeader>
+      
+      <Dialog
+  open={showUploadModal}
+  onOpenChange={(open) => {
+    if (!open && (uploadStatus === "success" || uploadStatus === "error")) {
+      setShowUploadModal(false);
+    }
+  }}
+>
+  <DialogContent className="max-w-md rounded-3xl border border-[#E4E6F5] bg-white shadow-xl px-6 py-8">
+    <div className="text-center space-y-4">
+      {/* Title */}
+      <h2 className="text-xl font-bold text-[#2B265E]">
+        {uploadStatus === "uploading"
+          ? "Uploading Document"
+          : uploadStatus === "success"
+          ? "Upload Complete"
+          : "Upload Failed"}
+      </h2>
 
-          <div className="flex flex-col items-center justify-center space-y-4 py-4">
-            {uploadStatus === 'uploading' && (
-              <>
-                <div className="w-full">
-                  <Progress value={uploadProgress} className="h-2" />
-                  <p className="text-sm text-center mt-2 text-muted-foreground">
-                    {uploadProgress}% uploaded
-                  </p>
-                </div>
-                <p className="text-sm text-center">
-                  Uploading {currentUploadedFile?.name}...
-                </p>
-              </>
-            )}
-
-            {uploadStatus === 'success' && (
-              <>
-                <CheckCircle2 className="w-12 h-12 text-green-500 animate-bounce" />
-                <p className="text-sm text-center">
-                  Document successfully attached!
-                </p>
-                <Button
-                  onClick={() => setShowUploadModal(false)}
-                  className="mt-4"
-                >
-                  Done
-                </Button>
-              </>
-            )}
-
-            {uploadStatus === 'error' && (
-              <>
-                <XCircle className="w-12 h-12 text-red-500" />
-                <p className="text-sm text-center">
-                  Failed to upload document. Please try again.
-                </p>
-                <div className="flex gap-2 mt-4">
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowUploadModal(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={() => uploadZipToDMS(currentUploadedFile)}
-                  >
-                    Retry
-                  </Button>
-                </div>
-              </>
-            )}
+      {/* Uploading */}
+      {uploadStatus === "uploading" && (
+        <>
+          <div className="w-full">
+            <div className="w-full bg-[#F4F7FE] rounded-full h-2 mt-3 overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${uploadProgress}%` }}
+                transition={{ duration: 0.6, type: "spring" }}
+                className="h-2 rounded-full bg-gradient-to-r from-[#7B8CFF] to-[#5B6CFF]"
+              />
+            </div>
+            <p className="text-sm text-gray-500 mt-3">{uploadProgress}% uploaded</p>
+            <p className="text-sm text-gray-600">{currentUploadedFile?.name}</p>
           </div>
-        </DialogContent>
-      </Dialog>
+        </>
+      )}
+
+      {/* Success */}
+      {uploadStatus === "success" && (
+        <div className="flex flex-col items-center space-y-4">
+          <CheckCircle2 className="h-12 w-12 text-green-500 animate-bounce" />
+          <p className="text-gray-600 text-sm">Document successfully attached!</p>
+          <Button
+            onClick={() => setShowUploadModal(false)}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-xl shadow hover:from-blue-700 hover:to-indigo-700"
+          >
+            Done
+          </Button>
+        </div>
+      )}
+
+      {/* Error */}
+      {uploadStatus === "error" && (
+        <div className="flex flex-col items-center space-y-4">
+          <XCircle className="h-12 w-12 text-red-500" />
+          <p className="text-gray-600 text-sm">
+            Something went wrong during the upload. Please try again.
+          </p>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setShowUploadModal(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => uploadZipToDMS(currentUploadedFile)}
+              className="bg-gradient-to-r from-red-500 to-rose-500 text-white shadow"
+            >
+              Retry
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
+  </DialogContent>
+</Dialog>
+
 
       <Dialog open={showAnalysisPopup} onOpenChange={() => {}}>
   <DialogContent className="max-w-md rounded-3xl bg-white/70 backdrop-blur-lg border border-blue-200 shadow-2xl">
