@@ -10,7 +10,7 @@ import { useLocation } from "wouter";
 import { useMyContext } from "../hooks/use-context";
 
 // const URL = import.meta.env.VITE_GW;
-const URL = 'http://localhost:8000' || import.meta.env.VITE_GW;
+const URL = 'http://127.0.0.1:8000'
 
 
 

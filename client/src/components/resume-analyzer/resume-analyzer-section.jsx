@@ -60,7 +60,7 @@ import { customFetch } from "../../utils/api";
 import { useAuth } from "@clerk/clerk-react";
 
 // const URL = import.meta.env.VITE_GW;
-const URL = 'http://localhost:8000' || import.meta.env.VITE_GW;
+const URL = 'http://127.0.0.1:8000'
 
 
 const inputIcons = {
