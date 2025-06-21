@@ -1,4 +1,4 @@
-import { useState , useEffect} from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -6,19 +6,56 @@ import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useMyContext } from "../../hooks/use-context";
 import Loader from "../ui/Loader/Loader";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import { CheckCircle2, XCircle } from "lucide-react";
+import { Progress } from "../ui/progress";
+
 import ResumeDropzone from "./resume-dropzone";
 import JobDescriptionInput from "./job-description-input";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "../ui/accordion";
-import { User, Briefcase, Building2, MapPin, Star, Globe, BookText, Languages, Filter } from "lucide-react";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../ui/select";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "../ui/accordion";
+import {
+  User,
+  Briefcase,
+  Building2,
+  MapPin,
+  Star,
+  Globe,
+  BookText,
+  Languages,
+  Filter,
+} from "lucide-react";
 import { Badge } from "../ui/badge";
 import { dummyCandidates } from "../ui/dummyData";
 import { customFetch } from "../../utils/api";
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth } from "@clerk/clerk-react";
 
 const URL = import.meta.env.VITE_GW;
 
@@ -39,17 +76,19 @@ const analysisFormSchema = z.object({
   jobTitle: z.string().min(3, "Job title must be at least 3 characters"),
   department: z.string().optional(),
   jobDescription: z.string().min(20, "Job description must be at least 20 characters"),
-  filters: z.object({
-    experience: z.string().optional(),
-    location: z.string().optional(),
-    skills: z.string().optional(),
-    education: z.string().optional(),
-    industry: z.string().optional(),
-    languages: z.string().optional(),
-    prioritySkills: z.string().optional(),
-    priorityExperience: z.string().optional(),
-    priorityEducation: z.string().optional(),
-  }).optional(),
+  filters: z
+    .object({
+      experience: z.string().optional(),
+      location: z.string().optional(),
+      skills: z.string().optional(),
+      education: z.string().optional(),
+      industry: z.string().optional(),
+      languages: z.string().optional(),
+      prioritySkills: z.string().optional(),
+      priorityExperience: z.string().optional(),
+      priorityEducation: z.string().optional(),
+    })
+    .optional(),
 });
 
 const StunningInput = ({ label, placeholder, name, control, disabled }) => (
@@ -57,9 +96,12 @@ const StunningInput = ({ label, placeholder, name, control, disabled }) => (
     control={control}
     name={name}
     render={({ field }) => (
-      <FormItem className={`bg-white/70 backdrop-blur-lg rounded-xl border border-blue-100 p-4 shadow-sm transition-all hover:shadow-md ${disabled ? "opacity-60 pointer-events-none" : ""}`}>
+      <FormItem
+        className={`bg-white/70 backdrop-blur-lg rounded-xl border border-blue-100 p-4 shadow-sm transition-all hover:shadow-md ${disabled ? "opacity-60 pointer-events-none" : ""
+          }`}
+      >
         <FormLabel className="text-blue-900 font-medium flex items-center gap-2">
-          {inputIcons[name.split('.').pop()]}
+          {inputIcons[name.split(".").pop()]}
           {label}
         </FormLabel>
         <FormControl>
@@ -67,11 +109,7 @@ const StunningInput = ({ label, placeholder, name, control, disabled }) => (
             placeholder={placeholder}
             {...field}
             disabled={disabled}
-            className={`
-              mt-2 px-4 py-3 w-full rounded-lg bg-white/80 border border-blue-100
-              focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400
-              text-blue-900 placeholder-blue-400 transition-all
-            `}
+            className="mt-2 px-4 py-3 w-full rounded-lg bg-white/80 border border-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-400 text-blue-900 placeholder-blue-400 transition-all"
           />
         </FormControl>
         <FormMessage className="text-xs text-rose-500 mt-1" />
@@ -81,11 +119,10 @@ const StunningInput = ({ label, placeholder, name, control, disabled }) => (
 );
 
 export default function ResumeAnalyzerSection({ onCancel }) {
-  
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [location, navigate] = useLocation();
   const { toast } = useToast();
-  const { setAnalysisResults } = useMyContext();
+  const { analysisResults, setAnalysisResults, batchDetails, setBatchDetails } = useMyContext();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [batchId, setBatchId] = useState(null);
@@ -94,11 +131,12 @@ export default function ResumeAnalyzerSection({ onCancel }) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploadDone, setIsUploadDone] = useState(false);
 
+  const [showAnalysisPopup, setShowAnalysisPopup] = useState(false);
+  const [countdown, setCountdown] = useState(5);
 
-  const fetchToken = async () => {
-    const token = await getToken();
-    return token
-  };
+
+  const [uploadStatus, setUploadStatus] = useState(null); // 'uploading', 'success', 'error'
+  const [currentUploadedFile, setCurrentUploadedFile] = useState(null);
 
   const form = useForm({
     resolver: zodResolver(analysisFormSchema),
@@ -121,10 +159,34 @@ export default function ResumeAnalyzerSection({ onCancel }) {
     },
   });
 
+  // ✅ Auto populate form if batchDetails exists
+  useEffect(() => {
+    if (batchDetails && batchDetails.id && !isSaved) {
+      // Map job_name to both jobTitle and name fields
+      form.setValue("name", batchDetails.job_name || "");
+      form.setValue("jobTitle", batchDetails.job_name || "");
+      form.setValue("department", batchDetails.department || "");
+      form.setValue("jobDescription", batchDetails.job_description || "");
+      setIsSaved(true);
+      setBatchId(batchDetails.id);
+    }
+  }, [batchDetails, form, isSaved]);
+
+  useEffect(() => {
+    const zip = uploadedFiles.find((f) => f.name.endsWith(".zip"));
+    if (zip && (!currentUploadedFile || zip.name !== currentUploadedFile.name)) {
+      uploadZipToDMS(zip);
+    }
+  }, [uploadedFiles]); // Removed currentUploadedFile from dependencies
+
+  const fetchToken = async () => {
+    const token = await getToken();
+    return token;
+  };
+
   const onSave = async () => {
     const valid = await form.trigger(["name", "jobTitle", "department", "jobDescription"]);
     if (!valid) return;
-
 
     const values = form.getValues();
     const formData = new FormData();
@@ -133,16 +195,14 @@ export default function ResumeAnalyzerSection({ onCancel }) {
 
     const _token = await fetchToken();
 
-    console.log('_token', _token);
-
     try {
       const res = await customFetch(`${URL}/batches/`, {
         method: "POST",
         body: formData,
         stringifyBody: false,
-        credentials: 'omit',
-        token: _token, // Pass the token directly
-        includeAuth: false, // will include Clerk JWT token automatically
+        credentials: "omit",
+        token: _token,
+        includeAuth: false,
       });
 
       if (res) {
@@ -154,7 +214,6 @@ export default function ResumeAnalyzerSection({ onCancel }) {
           variant: "success",
         });
       }
-
     } catch (error) {
       console.error("Save failed:", error);
       toast({
@@ -165,52 +224,75 @@ export default function ResumeAnalyzerSection({ onCancel }) {
     }
   };
 
-useEffect(() => {
-    const zip = uploadedFiles.find((f) => f.name.endsWith(".zip"));
-    if (zip) uploadZipToDMS(zip);
-  }, [uploadedFiles]);
+  const uploadZipToDMS = async (zipFile) => {
+    // Don't proceed if we're already uploading this file
+    if (currentUploadedFile && zipFile.name === currentUploadedFile.name && uploadStatus === 'uploading') {
+      return;
+    }
 
-  const uploadZipToDMS = (zipFile) => {
     setShowUploadModal(true);
     setUploadProgress(0);
     setIsUploadDone(false);
+    setUploadStatus('uploading');
+    setCurrentUploadedFile(zipFile);
 
     const formData = new FormData();
     formData.append("file", zipFile);
+    formData.append("batch_id", batchId || "");
 
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${URL}/dms/upload/`, true);
+    try {
+      const _token = await fetchToken();
+      const xhr = new XMLHttpRequest();
 
-    xhr.upload.onprogress = (ev) =>
-      ev.lengthComputable &&
-      setUploadProgress(Math.round((ev.loaded / ev.total) * 100));
+      xhr.open("POST", `${URL}/batches/upload/`, true);
+      xhr.setRequestHeader('Authorization', `Bearer ${_token}`);
 
-    xhr.onload = () => {
-      if (xhr.status === 200) {
-        setUploadProgress(100);
-        setIsUploadDone(true);
-      } else {
+      xhr.upload.onprogress = (ev) => {
+        if (ev.lengthComputable) {
+          setUploadProgress(Math.round((ev.loaded / ev.total) * 100));
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          setUploadProgress(100);
+          setUploadStatus('success');
+          setIsUploadDone(true);
+
+          // Only update uploadedFiles if this is still the current file
+          setUploadedFiles(prev => {
+            const current = prev.find(f => f.name === zipFile.name);
+            return current ? [zipFile] : prev;
+          });
+        } else {
+          setUploadStatus('error');
+          toast({
+            title: "Upload Failed",
+            description: "Something went wrong with the document upload.",
+            variant: "destructive",
+          });
+        }
+      };
+
+      xhr.onerror = () => {
+        setUploadStatus('error');
         toast({
-          title: "Upload Failed",
-          description: "Something went wrong with the ZIP upload.",
+          title: "Network Error",
+          description: "Couldn't reach upload server.",
           variant: "destructive",
         });
-        setShowUploadModal(false);
-      }
-    };
+      };
 
-    xhr.onerror = () => {
+      xhr.send(formData);
+    } catch (error) {
+      setUploadStatus('error');
       toast({
-        title: "Network Error",
-        description: "Couldn't reach upload server.",
+        title: "Upload Failed",
+        description: error.message || "Failed to upload document",
         variant: "destructive",
       });
-      setShowUploadModal(false);
-    };
-
-    xhr.send(formData);
+    }
   };
-
 
   const onSubmit = async (data) => {
     if (uploadedFiles.length === 0) {
@@ -221,29 +303,63 @@ useEffect(() => {
       });
       return;
     }
+
     setIsLoading(true);
+
     try {
-      localStorage.setItem("data", JSON.stringify(data));
+      const _token = await fetchToken();
+      const submissionData = batchDetails ? {
+        ...data,
+        name: batchDetails.job_name || data.name,
+        jobTitle: batchDetails.job_name || data.jobTitle,
+        jobDescription: batchDetails.job_description || data.jobDescription
+      } : data;
+
+      localStorage.setItem("data", JSON.stringify(submissionData));
+
       const formData = new FormData();
-      formData.append("job_description", data?.jobDescription);
-      formData.append("resumes_zip_file", uploadedFiles?.[0]);
-      const url = "https://rayappan.pythonanywhere.com/api/";
-      const res = await fetch(`${url}`, {
-        method: "POST",
-        body: formData,
-        mode: "cors",
-        credentials: "omit",
-      });
-      const response = await res.json();
-      setAnalysisResults(response);
-      if (response) {
-        setIsLoading(false);
-        navigate("/results");
+
+      const payload = {
+        "batch_id": batchId || "",
       }
+      const url = batchDetails ? `${URL}/analyze/` : `${URL}/analyze/`;
+
+      const res = await customFetch(url, {
+        method: "POST",
+        body: JSON.stringify(payload),
+        stringifyBody: false,
+        credentials: "omit",
+        token: _token,
+        includeAuth: true,
+      });
+
+      if (res) {
+        setAnalysisResults(res);
+        setIsLoading(false);
+
+        // Show popup
+        setShowAnalysisPopup(true);
+        let timeLeft = 5;
+        const timer = setInterval(() => {
+          timeLeft -= 1;
+          setCountdown(timeLeft);
+          if (timeLeft === 0) {
+            clearInterval(timer);
+            navigate("/dashboard");
+          }
+        }, 1000);
+      }
+
     } catch (e) {
+      console.error("Analysis failed:", e);
       setAnalysisResults({ candidates: dummyCandidates });
       navigate("/results");
       setIsLoading(false);
+      toast({
+        title: "Analysis Error",
+        description: e.message || "Something went wrong during analysis",
+        variant: "destructive",
+      });
     }
   };
 
@@ -501,6 +617,93 @@ useEffect(() => {
           </form>
         </Form>
       </div>
+      <Dialog open={showUploadModal} onOpenChange={(open) => {
+        if (!open && (uploadStatus === 'success' || uploadStatus === 'error')) {
+          setShowUploadModal(false);
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              {uploadStatus === 'uploading' ? 'Uploading Document' :
+                uploadStatus === 'success' ? 'Upload Complete' : 'Upload Failed'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="flex flex-col items-center justify-center space-y-4 py-4">
+            {uploadStatus === 'uploading' && (
+              <>
+                <div className="w-full">
+                  <Progress value={uploadProgress} className="h-2" />
+                  <p className="text-sm text-center mt-2 text-muted-foreground">
+                    {uploadProgress}% uploaded
+                  </p>
+                </div>
+                <p className="text-sm text-center">
+                  Uploading {currentUploadedFile?.name}...
+                </p>
+              </>
+            )}
+
+            {uploadStatus === 'success' && (
+              <>
+                <CheckCircle2 className="w-12 h-12 text-green-500 animate-bounce" />
+                <p className="text-sm text-center">
+                  Document successfully attached!
+                </p>
+                <Button
+                  onClick={() => setShowUploadModal(false)}
+                  className="mt-4"
+                >
+                  Done
+                </Button>
+              </>
+            )}
+
+            {uploadStatus === 'error' && (
+              <>
+                <XCircle className="w-12 h-12 text-red-500" />
+                <p className="text-sm text-center">
+                  Failed to upload document. Please try again.
+                </p>
+                <div className="flex gap-2 mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowUploadModal(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => uploadZipToDMS(currentUploadedFile)}
+                  >
+                    Retry
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showAnalysisPopup} onOpenChange={() => {}}>
+  <DialogContent className="max-w-md rounded-3xl bg-white/70 backdrop-blur-lg border border-blue-200 shadow-2xl">
+    <DialogHeader>
+      <DialogTitle className="text-center text-2xl font-bold text-blue-900">
+         Analysis Started!
+      </DialogTitle>
+    </DialogHeader>
+
+    <div className="flex flex-col items-center text-center space-y-4 py-6">
+      <p className="text-blue-800 text-md">
+        Your resumes are being analyzed. Results will be available shortly.
+      </p>
+      <div className="text-lg font-semibold text-indigo-700 animate-pulse">
+        Redirecting to Dashboard in {countdown}...
+      </div>
+    </div>
+  </DialogContent>
+</Dialog>
+
     </div>
   );
 }

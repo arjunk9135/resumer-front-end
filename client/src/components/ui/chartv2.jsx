@@ -49,37 +49,60 @@ export default function Chartv2({ candidates, loading }) {
   };
 
   // Vertical bar chart (Overall Score per candidate)
-  const histogramData = {
-    labels: candidates.map((c) => c.name),
-    datasets: [
-      {
-        label: 'Overall Score',
-        data: candidates.map((c) => c.evaluation.overall.score),
-        backgroundColor: 'rgba(167, 139, 250, 0.9)', // Consistent color
-        borderRadius: 10,
-        barThickness: 40, // Thicker bar
+const histogramData = {
+  labels: candidates.map((c) => c.candidate_name),
+  datasets: [
+    {
+      label: 'Overall Score',
+      data: candidates.map((c) => c.evaluation?.overall?.score || 0),
+      backgroundColor: (ctx) => {
+        const chart = ctx.chart;
+        const { ctx: canvasCtx, chartArea } = chart;
+        if (!chartArea) return '#5B6CFF'; // fallback
+
+        const gradient = canvasCtx.createLinearGradient(
+          chartArea.left,
+          chartArea.bottom,
+          chartArea.right,
+          chartArea.top
+        );
+
+        gradient.addColorStop(0, '#7B8CFF'); // Primary Gradient Start
+        gradient.addColorStop(1, '#5B6CFF'); // Primary Gradient End
+
+        return gradient;
       },
-    ],
-  };
+      borderRadius: 10,
+      barThickness: 40,
+    },
+  ],
+};
+
 
   // Donut chart: Experience split
   const donutData = {
-    labels: ['0-1 yrs', '1-3 yrs', '3-5 yrs', '5+ yrs'],
-    datasets: [
-      {
-        data: [
-          candidates.filter((c) => c.experience <= 1).length,
-          candidates.filter((c) => c.experience > 1 && c.experience <= 3).length,
-          candidates.filter((c) => c.experience > 3 && c.experience <= 5).length,
-          candidates.filter((c) => c.experience > 5).length,
-        ],
-        backgroundColor: ['#3B5BFF', '#5E75FF', '#7B8CFF', '#B1C0FF'],
-        borderColor: '#ffffff',
-        borderWidth: 2,
-        cutout: '70%',
-      },
-    ],
-  };
+  labels: ['0-1 yrs', '1-3 yrs', '3-5 yrs', '5+ yrs'],
+  datasets: [
+    {
+      data: [
+        candidates.filter((c) => c.experience <= 1).length,
+        candidates.filter((c) => c.experience > 1 && c.experience <= 3).length,
+        candidates.filter((c) => c.experience > 3 && c.experience <= 5).length,
+        candidates.filter((c) => c.experience > 5).length,
+      ],
+      backgroundColor: [
+        '#B1C0FF', // 0-1 yrs: lightest
+        '#5E75FF', // 1-3 yrs: mid-light
+        '#3B5BFF', // 3-5 yrs: chart blue
+        '#5B6CFF', // 5+ yrs: gradient end
+      ],
+      borderColor: '#ffffff',
+      borderWidth: 2,
+      cutout: '70%',
+    },
+  ],
+};
+
 
   const horizontalBarOptions = {
     indexAxis: 'y',

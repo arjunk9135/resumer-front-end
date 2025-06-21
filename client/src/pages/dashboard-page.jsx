@@ -75,7 +75,7 @@ export default function DashboardPage() {
               value={totalCandidates}
               change={{ value: "28%", direction: "up", text: "record high" }}
               icon={<Sparkles className="text-[#5B6CFF]" />}
-              color="secondary"
+              color="primary"
             />
 
             <StatsCard

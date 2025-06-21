@@ -32,8 +32,8 @@ console.log('token',token)
   try {
     const response = await fetch(url, {
       method,
-      // headers: {} || defaultHeaders,
-      headers: {},
+      headers:  defaultHeaders,
+      // headers: {},
       body: processedBody,
       credentials: credentials ? "include" : "omit",
       signal: controller.signal,

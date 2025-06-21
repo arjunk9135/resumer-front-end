@@ -30,11 +30,12 @@ export default function TieredCandidates({ candidates }) {
     return 'notRecommended';
   };
 
-  const enrichedCandidates = candidates.map((c, i) => {
-    const matchScore = c.evaluation?.overall?.score * 10 || 0;
+  const enrichedCandidates = candidates.map((c) => {
+    const matchScore = (c.evaluation?.overall?.score ?? 0) * 10;
+    const name = c.candidate_name || 'Unnamed';
     return {
-      id: i,
-      name: c.name.replace(/_/g, ' '),
+      id: c.resume_id,
+      name,
       matchScore,
       tier: getTier(matchScore),
       experience: `${c.evaluation?.relevant_experience?.score}/10` || 'N/A',
@@ -109,17 +110,16 @@ export default function TieredCandidates({ candidates }) {
   };
 
   const toggleTier = (tier) => {
-    setExpandedTiers({
-      ...expandedTiers,
-      [tier]: !expandedTiers[tier],
-    });
+    setExpandedTiers((prev) => ({
+      ...prev,
+      [tier]: !prev[tier],
+    }));
   };
 
   const renderTier = (tier) => {
     const config = tierConfig[tier];
     const candidatesInTier = candidatesByTier[tier] || [];
-    const count = candidatesInTier.length;
-    if (count === 0) return null;
+    if (candidatesInTier.length === 0) return null;
 
     const Icon = config.icon;
 
@@ -130,9 +130,7 @@ export default function TieredCandidates({ candidates }) {
           onClick={() => toggleTier(tier)}
         >
           <div className="flex items-center">
-            <div
-              className={`h-10 w-10 flex items-center justify-center rounded-full ${config.iconBg}`}
-            >
+            <div className={`h-10 w-10 flex items-center justify-center rounded-full ${config.iconBg}`}>
               <Icon className={`h-5 w-5 ${config.iconText}`} />
             </div>
             <div className="ml-3">
@@ -142,7 +140,9 @@ export default function TieredCandidates({ candidates }) {
           </div>
           <div className="flex items-center space-x-4">
             <div className="text-right">
-              <span className={`text-sm font-medium ${config.textColor}`}>{count} candidates</span>
+              <span className={`text-sm font-medium ${config.textColor}`}>
+                {candidatesInTier.length} candidates
+              </span>
             </div>
             <Button variant="ghost" size="icon" className={`h-8 w-8 ${config.textColor} hover:bg-white/20`}>
               {expandedTiers[tier] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -154,14 +154,21 @@ export default function TieredCandidates({ candidates }) {
           <div className="p-4 bg-white rounded-b-xl">
             <div className="grid grid-cols-1 gap-3">
               {candidatesInTier.map((candidate) => (
-                <div key={candidate.id} className="p-4 bg-white border border-[#E1E5F2] rounded-lg hover:border-[#5B6CFF] transition-colors">
+                <div
+                  key={candidate.id}
+                  className="p-4 bg-white border border-[#E1E5F2] rounded-lg hover:border-[#5B6CFF] transition-colors"
+                >
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                     <div className="flex-shrink-0">
                       <div className="h-10 w-10 rounded-full bg-[#F4F7FE] flex items-center justify-center text-[#2F49D1] font-medium">
-                        {candidate.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        {candidate.name
+                          .split(' ')
+                          .map((n) => n[0])
+                          .join('')
+                          .toUpperCase()}
                       </div>
                     </div>
-                    
+
                     <div className="flex-grow">
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <h4 className="font-medium text-gray-900">{candidate.name}</h4>
@@ -176,7 +183,7 @@ export default function TieredCandidates({ candidates }) {
                         </Badge>
                       </div>
                       <p className="text-xs text-[#6E7B8A] mt-1">
-                        Clarity: {candidate?.clarity} • Education: {candidate.education}
+                        Clarity: {candidate.clarity} • Education: {candidate.education}
                       </p>
                       <div className="mt-2 flex flex-wrap gap-2">
                         {candidate.skills.map((skill, i) => (
@@ -190,7 +197,7 @@ export default function TieredCandidates({ candidates }) {
                         ))}
                       </div>
                     </div>
-                    
+
                     <div className="flex-shrink-0 sm:self-start sm:mt-1">
                       <Button variant="link" size="sm" className="h-auto p-0 text-[#5B6CFF] hover:text-[#2F49D1]">
                         View Resume
@@ -208,7 +215,7 @@ export default function TieredCandidates({ candidates }) {
 
   return (
     <Card className="border border-[#E1E5F2] bg-white rounded-xl shadow-sm">
-      <CardHeader className="pb-4 border-b-0 bg-gradient-to-r from-[#5B6CFF] to-[#7B8CFF] rounded-t-xl shadow-[var(--tw-ring-offset-shadow,0_0_#0000),var(--tw-ring-shadow,0_0_#0000),var(--tw-shadow)]">
+      <CardHeader className="pb-4 border-b-0 bg-gradient-to-r from-[#5B6CFF] to-[#7B8CFF] rounded-t-xl">
         <CardTitle className="text-lg font-medium text-white flex items-center gap-2">
           <Users className="h-5 w-5" />
           Candidates by Tier
@@ -216,27 +223,12 @@ export default function TieredCandidates({ candidates }) {
       </CardHeader>
       <CardContent className="p-6">
         <div className="flex flex-wrap items-center gap-4 mb-6 pb-4 border-b border-[#E1E5F2]">
-          <span className="text-sm font-medium text-[#2F49D1]">Score Tiers:</span>
-          <div className="flex items-center text-xs text-[#44C97F] bg-[#44C97F]/10 px-3 py-1 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-[#44C97F] mr-2"></span>
-            90-100% Exceptional
-          </div>
-          <div className="flex items-center text-xs text-[#2F49D1] bg-[#2F49D1]/10 px-3 py-1 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-[#2F49D1] mr-2"></span>
-            80-89% Strong
-          </div>
-          <div className="flex items-center text-xs text-[#5B6CFF] bg-[#5B6CFF]/10 px-3 py-1 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-[#5B6CFF] mr-2"></span>
-            70-79% Qualified
-          </div>
-          <div className="flex items-center text-xs text-[#5E75FF] bg-[#5E75FF]/10 px-3 py-1 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-[#5E75FF] mr-2"></span>
-            60-69% Potential
-          </div>
-          <div className="flex items-center text-xs text-[#F95E5E] bg-[#F95E5E]/10 px-3 py-1 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-[#F95E5E] mr-2"></span>
-            Below 60% Not Recommended
-          </div>
+          {Object.entries(tierConfig).map(([tierKey, { label, textColor, iconBg }]) => (
+            <div key={tierKey} className={`flex items-center text-xs ${textColor} ${iconBg}/10 px-3 py-1 rounded-full`}>
+              <span className={`w-2 h-2 rounded-full ${iconBg} mr-2`}></span>
+              {label}
+            </div>
+          ))}
         </div>
         {Object.keys(tierConfig).map((tier) => renderTier(tier))}
       </CardContent>

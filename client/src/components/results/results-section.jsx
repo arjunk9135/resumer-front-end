@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
-import { cn } from '@/lib/utils'; 
+import { cn } from '@/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { useParams, useLocation } from 'wouter';
 import {
-  Download,
-  Share2
+  Download, Share2, FileSpreadsheet, FileText
 } from 'lucide-react';
 
 import PageContainer from '@/components/layout/page-container';
@@ -15,19 +14,14 @@ import Charts from '@/components/results/charts';
 import TopCandidates from '@/components/results/top-candidates';
 import TieredCandidates from '@/components/results/tiered-candidates';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, Button } from '@/components/ui';
 import { useToast } from '@/hooks/use-toast';
 import { useMyContext } from '../../hooks/use-context';
 
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable'; // Import the default function
-import {
-  FileSpreadsheet,
-  FileText
-} from 'lucide-react';
+import autoTable from 'jspdf-autotable';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,347 +29,164 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import Chartv2 from '../../components/ui/chartv2';
-import { dummyCandidates } from '../ui/dummyData';
 
 export default function ResultsSection() {
   const { id } = useParams();
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [sortType, setSortType] = useState('match');
-  const { analysisResults, setAnalysisResults } = useMyContext();
+  const { analysisResults } = useMyContext();
 
-  console.log('analysisResults', analysisResults);
+  const candidates = analysisResults?.results || [];
 
-  // Mock fetch analyses from sessionStorage
-  const { data: analyses = [] } = useQuery({
-    queryKey: ['/api/analyses'],
-    queryFn: () => {
-      // Get analyses from sessionStorage
-      const storedAnalyses = JSON.parse(sessionStorage.getItem('analyses') || '[]');
-      return storedAnalyses;
-    }
-  });
+  const currentAnalysis = {
+    id: analysisResults?.id,
+    jobTitle: analysisResults?.job_name,
+    candidateCount: analysisResults?.total_resumes,
+    status: analysisResults?.status
+  };
 
-  // Find the current analysis or use the first completed one
-  const currentAnalysis = id
-    ? analyses.find(a => a.id === parseInt(id))
-    : analyses.find(a => a.status === 'completed') || analyses[0];
-
-  // If no ID was provided but we found a completed analysis, update the URL
-  useEffect(() => {
-    if (!id && currentAnalysis) {
-      navigate(`/results/${currentAnalysis.id}`);
-    }
-  }, [id, currentAnalysis, navigate]);
-
-  // Get candidates from sessionStorage
-  const {
-    data: candidates = [],
-    isLoading: candidatesLoading
-  } = useQuery({
-    queryKey: ['/api/analyses', currentAnalysis?.id, 'candidates'],
-    enabled: !!currentAnalysis?.id,
-    queryFn: () => {
-      // Get candidates from sessionStorage
-      const storedCandidates = JSON.parse(sessionStorage.getItem('candidates') || '[]');
-      const filteredCandidates = storedCandidates.filter(c => c.analysisId === currentAnalysis.id);
-      return filteredCandidates;
-    }
-  });
-
-
-  // Handle export click
   const handleExport = () => {
-    toast({
-      title: 'Export started',
-      description: 'Your data is being prepared for download.'
-    });
-
-    // In a real app, this would call an API to generate and download the export
+    toast({ title: 'Export started', description: 'Your data is being prepared for download.' });
     setTimeout(() => {
-      toast({
-        title: 'Export ready',
-        description: 'Your data has been exported successfully.'
-      });
+      toast({ title: 'Export ready', description: 'Your data has been exported successfully.' });
     }, 2000);
   };
 
-  // Handle share click
-  const handleShare = () => {
-    toast({
-      title: 'Share results',
-      description: 'A shareable link has been copied to your clipboard.'
-    });
-  };
-
   const exportToExcel = () => {
-  if (!analysisResults?.candidates || analysisResults.candidates.length === 0) {
-    toast({
-      title: 'Export Failed',
-      description: 'No candidate data available to export.',
-      variant: 'destructive'
-    });
-    return;
-  }
+    if (!candidates.length) {
+      toast({ title: 'Export Failed', description: 'No candidate data available to export.', variant: 'destructive' });
+      return;
+    }
 
-  try {
-    const excelData = analysisResults.candidates.map(candidate => ({
-      Name: candidate?.name || 'N/A',
-      Email: candidate?.email || 'N/A',
-      Contact: candidate?.contact || 'N/A',
-      Experience: candidate?.experience || 'N/A',
-      Location: candidate?.location || 'N/A',
-      Skills: Array.isArray(candidate?.skills) ? candidate.skills.join(', ') : 'N/A',
-      Education: candidate?.education || 'N/A',
-      'Match Score': candidate?.evaluation?.overall?.score ?? 'N/A',
-      'Skills Match': candidate?.evaluation?.skills_match?.score ?? 'N/A',
-      'Experience Match': candidate?.evaluation?.relevant_experience?.score ?? 'N/A'
+    const excelData = candidates.map(candidate => ({
+      Name: candidate.candidate_name || 'N/A',
+      Email: candidate.email || 'N/A',
+      Contact: candidate.contact || 'N/A',
+      Experience: candidate.experience || 'N/A',
+      Location: candidate.location || 'N/A',
+      Skills: candidate.skills || 'N/A',
+      Education: candidate.education || 'N/A',
+      'Match Score': candidate.evaluation?.overall?.score ?? 'N/A',
+      'Skills Match': candidate.evaluation?.skills_match?.score ?? 'N/A',
+      'Experience Match': candidate.evaluation?.relevant_experience?.score ?? 'N/A'
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(excelData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Candidates");
 
-    const jobTitle = currentAnalysis?.jobTitle || 'analysis';
-    const safeFilename = `candidates_${jobTitle.replace(/[/\\?%*:|"<>]/g, '_')}.xlsx`;
-
+    const safeFilename = `candidates_${(currentAnalysis?.jobTitle || 'analysis').replace(/[/\\?%*:|"<>]/g, '_')}.xlsx`;
     XLSX.writeFile(workbook, safeFilename);
 
-    toast({
-      title: 'Excel Exported',
-      description: 'Candidate data has been successfully exported to Excel.'
-    });
-  } catch (error) {
-    console.error('Excel export failed:', error);
-    toast({
-      title: 'Export Failed',
-      description: 'An error occurred while exporting to Excel.',
-      variant: 'destructive'
-    });
-  }
-};
-
+    toast({ title: 'Excel Exported', description: 'Candidate data has been successfully exported to Excel.' });
+  };
 
   const exportToPDF = async () => {
     try {
-      const { jsPDF } = await import('jspdf');
-      await import('jspdf-autotable');
       const doc = new jsPDF();
       autoTable(doc, {
-        head: [['Name', 'Score']],
-        body: candidates.map(c => [c.name, c.score]),
-      });
-      doc.save('results.pdf');
-
-      doc.setFontSize(18);
-      doc.text(`Candidate Analysis: ${currentAnalysis?.jobTitle || 'Untitled'}`, 14, 15);
-      doc.setFontSize(12);
-      doc.text(`Generated on ${new Date().toLocaleDateString()}`, 14, 22);
-
-      const pdfData = analysisResults?.candidates?.map(candidate => [
-        candidate.name || 'N/A',
-        candidate.email || 'N/A',
-        candidate.contact || 'N/A',
-        candidate.experience || 'N/A',
-        candidate.evaluation?.overall?.score || 'N/A'
-      ]) || [];
-
-      doc.autoTable({
         head: [['Name', 'Email', 'Contact', 'Experience', 'Match Score']],
-        body: pdfData,
-        startY: 30
+        body: candidates.map(c => [
+          c.candidate_name,
+          c.email,
+          c.contact,
+          c.experience,
+          c.evaluation?.overall?.score
+        ])
       });
+      doc.save(`candidates_${(currentAnalysis?.jobTitle || 'analysis').replace(/[/\\?%*:|"<>]/g, '-')}.pdf`);
 
-      doc.save(`candidates_${currentAnalysis?.jobTitle?.replace(/[/\\?%*:|"<>]/g, '-') || 'analysis'}.pdf`);
-
-      toast({
-        title: 'PDF exported',
-        description: 'Candidate data has been exported to PDF.'
-      });
+      toast({ title: 'PDF exported', description: 'Candidate data has been exported to PDF.' });
     } catch (error) {
       console.error('PDF export error:', error);
-      toast({
-        title: 'Export failed',
-        description: 'Error exporting to PDF',
-        variant: 'destructive'
-      });
+      toast({ title: 'Export failed', description: 'Error exporting to PDF', variant: 'destructive' });
     }
   };
 
-  // If no analysis is selected or found  
-  if (analysisResults?.candidates <= 0) {
+  if (!candidates.length) {
     return (
-        <div className="flex flex-col items-center justify-center py-12">
-          <h2 className="text-xl font-medium text-gray-900 mb-4">No analysis results found</h2>
-          <p className="text-gray-500 mb-6">Start a new analysis to see results here</p>
-          <Button onClick={() => navigate('/resume-analyzer')}>
-            Start New Analysis
-          </Button>
-        </div>
+      <>
+        {!candidates.length && (
+          <div className="flex flex-col items-center justify-center py-12 bg-white/60 backdrop-blur-md rounded-xl border border-blue-100 shadow-md">
+            <h2 className="text-xl font-semibold text-blue-900 mb-2">No Analysis Results</h2>
+            <p className="text-sm text-blue-700 mb-4">
+              Start a new analysis to view candidate matches.
+            </p>
+            <button
+              className="mt-4 sm:mt-0 bg-gradient-to-r from-[#7B8CFF] to-[#5B6CFF] hover:from-[#6F7FEF] hover:to-[#4B5CFF] text-white px-6 py-2 rounded-xl shadow-lg font-semibold transition-all"
+              onClick={() => navigate('/results')}
+            >
+              + Start New Analysis
+            </button>
+          </div>)}
+      </>
     );
   }
 
-  console.log('localStorage?.getItem(data)', JSON.parse(localStorage?.getItem('data')));
-
   return (
-      <div className="space-y-6">
-        {/* Page Header */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-display font-bold text-text">Analysis Results</h1>
-          <div className="flex space-x-2">
-            {/* <Button
-              variant="default"
-              onClick={() => navigate(`/resume-analyzer?reanalysis=${currentAnalysis.id}`)}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-                <path d="M3 3v5h5"></path>
-              </svg>
-              Rescan Analysis
-            </Button> */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={exportToExcel}>
-                  <FileSpreadsheet className="mr-2 h-4 w-4" />
-                  <span>Export as Excel</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={exportToPDF}>
-                  <FileText className="mr-2 h-4 w-4" />
-                  <span>Export as PDF</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-display font-bold text-text">Analysis Results</h1>
+        <div className="flex space-x-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuItem onClick={exportToExcel}>
+                <FileSpreadsheet className="mr-2 h-4 w-4" />
+                <span>Export as Excel</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={exportToPDF}>
+                <FileText className="mr-2 h-4 w-4" />
+                <span>Export as PDF</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-
-        {/* Results Header */}
-        {/* Results Header */}
-        <Card>
-          <CardContent className="p-6 bg-gradient-to-br rounded-3xl from-gray-50 to-white dark:from-gray-900/50 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700">
-  <motion.div 
-    className="flex flex-col md:flex-row md:items-center justify-between gap-4"
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.3 }}
-  >
-    <div>
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-white ">
-        {currentAnalysis?.jobTitle || JSON.parse(localStorage?.getItem('data'))?.jobTitle}
-      </h2>
-      <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
-        Job ID: {currentAnalysis?.jobId || 'JD-2023-0042'} • {currentAnalysis?.candidateCount || '0'} candidates analyzed
-      </p>
-    </div>
-
-    <div className="flex items-center gap-4">
-      <motion.div 
-        whileHover={{ scale: 1.03 }}
-        className={cn(
-          "inline-flex items-center px-3 py-1 rounded-full text-sm font-medium shadow-sm",
-          currentAnalysis?.status === 'completed'
-            ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-900/50"
-            : currentAnalysis?.status === 'processing'
-              ? "bg-blue-500/10 text-blue-800 dark:text-blue-200 border border-blue-200 dark:border-blue-900/50"
-              : "bg-gray-500/10 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700"
-        )}
-      >
-        {currentAnalysis?.status === 'completed' ? (
-          <>
-            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            Completed
-          </>
-        ) : currentAnalysis?.status === 'processing' ? (
-          <>
-            <svg className="w-4 h-4 mr-1 animate-spin" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-            </svg>
-            Processing
-          </>
-        ) : (
-          <>
-            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-            </svg>
-            Pending
-          </>
-        )}
-      </motion.div>
-
-     
-      {/* <Select value={sortType} onValueChange={setSortType}>
-        <motion.div whileHover={{ scale: 1.02 }}>
-          <SelectTrigger className="w-[180px] bg-white/50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm hover:shadow-md transition-all">
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-        </motion.div>
-        <SelectContent className="bg-white/90 dark:bg-gray-800 backdrop-blur-sm border border-gray-200 dark:border-gray-700 shadow-lg rounded-lg overflow-hidden">
-          <SelectItem 
-            value="match" 
-            className="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            Match Score
-          </SelectItem>
-          <SelectItem 
-            value="experience"
-            className="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            Experience
-          </SelectItem>
-          <SelectItem 
-            value="education"
-            className="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            Education
-          </SelectItem>
-          <SelectItem 
-            value="name"
-            className="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          >
-            Name
-          </SelectItem>
-        </SelectContent>
-      </Select> */}
-    </div>
-  </motion.div>
-</CardContent>
-        </Card>
-
-        {/* Analytics Overview */}
-        <AnalyticsOverview
-          candidates={analysisResults?.candidates}
-          loading={candidatesLoading}
-        />
-
-        {/* Top Candidates Section */}
-        {!candidatesLoading && candidates.length > 0 && (
-          <TopCandidates candidates={candidates} />
-        )}
-
-        {/* Charts Row */}
-        <Chartv2
-          candidates={analysisResults?.candidates || dummyCandidates}
-          loading={candidatesLoading}
-        />
-
-        {/* Tiered Candidates Section */}
-        {!candidatesLoading && (analysisResults?.candidates?.length > 0 || dummyCandidates?.length > 0) && (
-          <TieredCandidates candidates={analysisResults?.candidates || dummyCandidates} />
-        )}
-
-        {/* Candidates Table */}
-        <CandidatesTable
-          candidates={analysisResults?.candidates || dummyCandidates}
-          loading={candidatesLoading}
-          sortType={sortType}
-        />
       </div>
+
+      {/* Summary Card */}
+      <Card>
+        <CardContent className="p-6 rounded-3xl from-gray-50 to-white dark:from-gray-900/50 dark:to-gray-800 border-b border-gray-200 dark:border-gray-700">
+          <motion.div
+            className="flex flex-col md:flex-row md:items-center justify-between gap-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                {currentAnalysis?.jobTitle || 'Untitled Role'}
+              </h2>
+              <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
+                Job ID: {currentAnalysis?.id?.slice(0, 8) || 'Unknown'} • {currentAnalysis?.candidateCount} candidates analyzed
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <span className={cn(
+                "px-3 py-1 rounded-full text-sm font-medium",
+                currentAnalysis?.status === 'COMPLETED'
+                  ? "bg-green-100 text-green-800"
+                  : "bg-yellow-100 text-yellow-800"
+              )}>
+                {currentAnalysis?.status}
+              </span>
+            </div>
+          </motion.div>
+        </CardContent>
+      </Card>
+
+      <AnalyticsOverview candidates={candidates} loading={false} />
+      <TopCandidates candidates={candidates} />
+      <Chartv2 candidates={candidates} loading={false} />
+      <TieredCandidates candidates={candidates} />
+      <CandidatesTable candidates={candidates} loading={false} sortType={sortType} />
+    </div>
   );
 }

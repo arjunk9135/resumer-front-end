@@ -108,3 +108,15 @@ GET http://127.0.0.1:8000/batches/<batch_uuid>/
 
 
 "preinstall": "npm install -g vite",
+
+
+## Other endpoints 
+from django.urls import path
+from .views import ResumeAnalysisView, ResumeAnalysisListView, ResumeAnalysisDetailView, BatchAnalysisView
+
+urlpatterns = [
+    path('analyze/', ResumeAnalysisView.as_view(), name='analyze_batch'),
+    path('analyses/', ResumeAnalysisListView.as_view(), name='analysis_list'),
+    path('analyses/<uuid:resume_id>/', ResumeAnalysisDetailView.as_view(), name='analysis_detail'),
+    path('batch_analyses/<uuid:batch_id>/', BatchAnalysisView.as_view(), name='batch_analysis'),
+]

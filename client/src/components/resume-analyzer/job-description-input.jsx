@@ -8,7 +8,7 @@ import FullScreenLoader from '../ui/Loader2/FullScreenLoader';
 import { BookText } from 'lucide-react';
 
 
-export default function JobDescriptionInput({ field, error }) {
+export default function JobDescriptionInput({ field, error, disabled }) {
   const apiKey = import.meta.env.VITE_GEN_AI_KEY;
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
@@ -137,7 +137,7 @@ export default function JobDescriptionInput({ field, error }) {
               variant="ghost"
               size="sm"
               onClick={generateWithAI}
-              disabled={isGenerating}
+              disabled={isGenerating || disabled}
               className="text-primary text-sm font-medium flex items-center hover:bg-indigo-50 hover:text-black-500"
             >
               <Wand2 className="h-4 w-4 mr-1" />
@@ -149,7 +149,7 @@ export default function JobDescriptionInput({ field, error }) {
               size="sm"
               onClick={handleCopy}
               className={`flex items-center border-indigo-200 hover:bg-indigo-50 transition-all duration-150 ${copied ? "bg-green-100 border-green-300" : ""}`}
-              disabled={!field.value}
+              disabled={!field.value || disabled}
               aria-label="Copy job description"
             >
               {copied ? (
@@ -172,6 +172,7 @@ export default function JobDescriptionInput({ field, error }) {
             value={field.value}
             onChange={field.onChange}
             rows={6}
+            disabled={disabled}
             placeholder="Enter detailed job description or generate one with AI..."
             className={`resize-none p-4 bg-transparent focus:ring-2 focus:ring-indigo-300 transition-all duration-150 text-base ${error ? 'border-destructive' : ''}`}
             style={{ minHeight: 120 }}

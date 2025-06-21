@@ -2,11 +2,20 @@ import React, { useState } from "react";
 import ResultsSection from "../components/results/results-section";
 import PageContainer from "@/components/layout/page-container";
 import ResumeAnalyzerSection from "../components/resume-analyzer/resume-analyzer-section";
+import { useAuth } from '@clerk/clerk-react';
+import { useToast } from '@/hooks/use-toast';
+import { customFetch } from "../utils/api";
+import Loader from "../components/ui/Loader/Loader";
+import { useLocation } from "wouter";
+import { useMyContext } from "../hooks/use-context";
+
+const URL = import.meta.env.VITE_GW;
+
 
 const statusStyles = {
-  "in progress": "bg-yellow-100 text-yellow-800",
-  "failed": "bg-[#FEE2E2] text-[#B91C1C]",
-  "complete": "bg-[#D1FAE5] text-[#065F46]",
+  "PENDING": "bg-yellow-100 text-yellow-800",
+  "FAILED": "bg-[#FEE2E2] text-[#B91C1C]",
+  "COMPLETED": "bg-[#D1FAE5] text-[#065F46]",
   "initiated": "bg-[#DBEAFE] text-[#1D4ED8]",
 };
 
@@ -43,35 +52,108 @@ const results = [
 
 const filterOptions = [
   { value: "all", label: "All" },
-  { value: "software engineer", label: "Software Engineer" },
-  { value: "data scientist", label: "Data Scientist" },
-  { value: "product manager", label: "Product Manager" },
-  { value: "qa engineer", label: "QA Engineer" },
+  { value: "FAILED", label: "Failed" },
+  { value: "PENDING", label: "Pending" },
+  { value: "PROCESSING", label: "Processing" }
 ];
 
 export default function ResultsPage() {
+  const { getToken } = useAuth();
+   const { analysisResults, setAnalysisResults ,batchDetails, setBatchDetails } = useMyContext();
   const [selectedResult, setSelectedResult] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [showAnalyzer, setShowAnalyzer] = useState(false);
+  const [batches, setBatches] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const { toast } = useToast();
 
-  const filteredResults = results.filter((result) => {
-    const matchesSearch = result.analysisName
+  React.useEffect(()=>{
+getBatches();
+  },[])
+
+ 
+
+  const fetchToken = async () => {
+    return await getToken();
+  };
+
+  const getBatches = async () => {
+      setIsLoading(true);
+      const _token = await fetchToken();
+      try {
+        const data = await customFetch(`${URL}/batches/`, {
+          method: "GET",
+          // token: _token,
+          includeAuth: false,
+        });
+        if (data) {
+          setBatches(data);
+          console.log("Fetched Batches:", data);
+        }
+      } catch (error) {
+        console.error("Error fetching batches:", error);
+        toast({
+          title: "Error",
+          description: error.message || "Something went wrong while fetching batches.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const getBatch = async (id) => {
+        setIsLoading(true);
+        const _token = await fetchToken();
+        try {
+          const data = await customFetch(`${URL}/batches/${id}`, {
+            method: "GET",
+            token: _token,
+            includeAuth: true,
+          });
+          if (data) {
+            console.log("Fetched Batches:", data);
+            setBatchDetails(data);
+            setShowAnalyzer(true);
+            // navigate('/results',{state: { result: true } });
+          }
+        } catch (error) {
+          console.error("Error fetching batches:", error);
+          toast({
+            title: "Error",
+            description: error.message || "Something went wrong while fetching batches.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+  const filteredResults = batches.filter((result) => {
+    const matchesSearch = result.job_name
       .toLowerCase()
       .includes(searchQuery.toLowerCase());
     const matchesFilter =
-      filterType === "all" || result.jobTitle.toLowerCase() === filterType;
-    return matchesSearch && matchesFilter;
+      filterType === "all" || result.status.toUpperCase() === filterType;
+    return matchesSearch && matchesFilter && result.status !== "COMPLETED";
   });
+
+  const handleBack=()=>{
+    setShowAnalyzer(false);
+    setBatchDetails(null)
+  }
 
   return (
     <PageContainer>
+      {isLoading && <Loader />}
       {showAnalyzer && (
         <div>
           <div className="flex justify-end mb-4">
             <button
               className="bg-[#DBEAFE] text-[#1D4ED8] px-4 py-2 rounded-lg hover:bg-[#BFDBFE] transition-colors"
-              onClick={() => setShowAnalyzer(false)}
+              onClick={handleBack}
             >
               ← Back to Results
             </button>
@@ -80,7 +162,7 @@ export default function ResultsPage() {
         </div>
       )}
 
-      {!showAnalyzer && selectedResult && (
+      {/* {!showAnalyzer && selectedResult && (
         <div>
           <button
             className="bg-[#DBEAFE] text-[#1D4ED8] px-4 py-2 rounded-lg hover:bg-[#BFDBFE] transition-colors mb-4"
@@ -90,7 +172,7 @@ export default function ResultsPage() {
           </button>
           <ResultsSection result={selectedResult} />
         </div>
-      )}
+      )} */}
 
       {!showAnalyzer && !selectedResult && (
         <div>
@@ -138,7 +220,7 @@ export default function ResultsPage() {
               <div
                 key={result.id}
                 className="relative group overflow-hidden rounded-3xl shadow-lg cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02]"
-                onClick={() => setSelectedResult(result)}
+                onClick={() => getBatch(result?.id)}
               >
                 {/* Holographic shine layer */}
                 <div className="absolute inset-0 bg-gradient-to-br from-[#7B8CFF]/10 via-[#5B6CFF]/10 to-[#A9A6FF]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -151,7 +233,7 @@ export default function ResultsPage() {
                 {/* Main card content */}
                 <div className="relative bg-white/90 backdrop-blur-sm rounded-3xl border border-[#E1E5F2]/50 p-6 z-10 h-full">
                   <span
-                    className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold shadow ${statusStyles[result.status] || "bg-gray-200 text-gray-700"}`}
+                    className={`absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold shadow ${statusStyles[result.status?.toUpperCase()] || "bg-gray-200 text-gray-700"}`}
                   >
                     {result.status.charAt(0).toUpperCase() + result.status.slice(1)}
                   </span>
@@ -178,7 +260,7 @@ export default function ResultsPage() {
                           />
                         </svg>
                       </div>
-                      <p className="text-[#4F4F74] font-medium">Job Title: <span className="text-[#2B265E]">{result.jobTitle}</span></p>
+                      <p className="text-[#4F4F74] font-medium">Job Title: <span className="text-[#2B265E]">{result.job_name?.slice(0,10)}..</span></p>
                     </div>
                     
                     <div className="flex items-center mt-auto">
@@ -198,7 +280,7 @@ export default function ResultsPage() {
                           />
                         </svg>
                       </div>
-                      <p className="text-[#4F4F74] font-medium">Analysis ID: <span className="text-[#2B265E] font-mono">{result.analysisId}</span></p>
+                      <p className="text-[#4F4F74] font-medium">Analysis ID: <span className="text-[#2B265E] font-mono">{result.id}</span></p>
                     </div>
                   </div>
                 </div>

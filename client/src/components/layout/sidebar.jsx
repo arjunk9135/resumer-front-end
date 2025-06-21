@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { UserButton } from "@clerk/clerk-react";
+import { useMyContext } from "../../hooks/use-context";
 
 const navItems = [
   { title: "Dashboard", icon: LayoutGrid, path: "/dashboard" },
@@ -22,6 +23,8 @@ export default function Sidebar({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const [location, navigate] = useLocation();
   const [credits, setCredits] = useState(15);
+    const { analysisResults, setAnalysisResults, batchDetails, setBatchDetails } = useMyContext();
+  
 
   const sidebarWidth = collapsed ? "w-16" : "w-64";
 
@@ -66,6 +69,7 @@ export default function Sidebar({ children }) {
                     : "hover:bg-[#F4F6FD] text-[#6B6F94]"}`}
                 onClick={() => {
                   navigate(path);
+                  setBatchDetails(null);
                   setMobileOpen(false);
                 }}
               >
