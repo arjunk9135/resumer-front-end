@@ -9,7 +9,7 @@ import dayjs from "dayjs";
 import Loader from "../components/ui/Loader/Loader";
 import { MyContextProvider, useMyContext } from "../hooks/use-context";
 
-const URL = import.meta.env.VITE_GW;
+const URL = 'http://localhost:8000' || import.meta.env.VITE_GW;
 
 const statusStyles = {
   PENDING: "bg-yellow-100 text-yellow-800",

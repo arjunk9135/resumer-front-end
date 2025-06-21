@@ -59,7 +59,9 @@ import { dummyCandidates } from "../ui/dummyData";
 import { customFetch } from "../../utils/api";
 import { useAuth } from "@clerk/clerk-react";
 
-const URL = import.meta.env.VITE_GW;
+// const URL = import.meta.env.VITE_GW;
+const URL = 'http://localhost:8000' || import.meta.env.VITE_GW;
+
 
 const inputIcons = {
   name: <User className="w-5 h-5 text-blue-500" />,

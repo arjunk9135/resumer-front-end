@@ -9,7 +9,9 @@ import Loader from "../components/ui/Loader/Loader";
 import { useLocation } from "wouter";
 import { useMyContext } from "../hooks/use-context";
 
-const URL = import.meta.env.VITE_GW;
+// const URL = import.meta.env.VITE_GW;
+const URL = 'http://localhost:8000' || import.meta.env.VITE_GW;
+
 
 
 const statusStyles = {
