@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: resumer-ui-workflow
+  namespace: resumer-ui-service
+  labels:
+    app.kubernetes.io/name: resumer-ui-workflow
+    kubernetes.azure.com/generator: devhub
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: resumer-ui-workflow
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
